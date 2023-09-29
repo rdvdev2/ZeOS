@@ -1,0 +1,19 @@
+name: Build OS
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-16.04
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: apt-get -y install bin86
+    - name: make
+      run: make
