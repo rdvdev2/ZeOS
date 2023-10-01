@@ -37,7 +37,10 @@ void printc(char c)
   if (c=='\n')
   {
     x = 0;
-    if (++y >= NUM_ROWS) scroll_screen();
+    if (++y >= NUM_ROWS) {
+      scroll_screen();
+      --y;
+    }
   }
   else
   {
@@ -47,7 +50,10 @@ void printc(char c)
     if (++x >= NUM_COLUMNS)
     {
       x = 0;
-      if (++y >= NUM_ROWS) scroll_screen();
+      if (++y >= NUM_ROWS) {
+        scroll_screen();
+        --y;
+      }
     }
   }
 }
