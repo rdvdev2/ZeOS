@@ -43,3 +43,6 @@ int strlen(char *a)
   return i;
 }
 
+void perror() {
+  write(0, "No error messages defined!\n", 28); 
+}

@@ -98,7 +98,7 @@ int __attribute__((__section__(".text.main")))
   copy_data((void *) KERNEL_START + *p_sys_size, (void*)L_USER_START, *p_usr_size);
 
 
-  printk("Entering user mode...");
+  printk("Entering user mode...\n");
 
   enable_int();
   /*
