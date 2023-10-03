@@ -3,6 +3,7 @@
  */
 
 #include <libc.h>
+#include <errors.h>
 
 #include <types.h>
 
@@ -44,5 +45,7 @@ int strlen(char *a)
 }
 
 void perror() {
-  write(0, "No error messages defined!\n", 28); 
+  char* msg = sys_errlist[errno];
+  write(1, msg, strlen(msg));
+  write(1, "\n", 1);
 }

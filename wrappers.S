@@ -12,7 +12,7 @@ ENTRY(write)
 	cmpl $0, %eax
 	jge exit
 	movl $0, %ebx
-	subl %ebx, %eax
+	subl %eax, %ebx
 	movl %ebx, errno
 	movl $-1, %eax	
 exit:
