@@ -1,5 +1,17 @@
 #include <asm.h>
 
+#define CALL_OS(SC_NUM) \
+	movl $##SC_NUM, %eax; \
+	int $0x80; \
+\
+	cmpl $0, %eax; \
+	jge exit_##SC_NUM; \
+	movl $0, %ebx; \
+	subl %eax, %ebx; \
+	movl %ebx, errno; \
+	movl $-1, %eax; \
+exit_##SC_NUM:
+
 ENTRY(write)
 	pushl %ebp
 	movl %esp, %ebp
@@ -9,15 +21,8 @@ ENTRY(write)
 	movl  8(%ebp), %edx
 	movl 12(%ebp), %ecx
 	movl 16(%ebp), %ebx
-	movl $4, %eax
-	int $0x80
-	cmpl $0, %eax
-	jge exit_write
-	movl $0, %ebx
-	subl %eax, %ebx
-	movl %ebx, errno
-	movl $-1, %eax	
-exit_write:
+	CALL_OS(4)
+
 	popl %ebx
 
 	popl %ebp
@@ -27,14 +32,7 @@ ENTRY(gettime)
 	pushl %ebp
 	movl %esp, %ebp
 
-	movl $10, %eax
-	int $0x80
-	cmpl $0, %eax
-	jge exit_gettime
-	movl $0, %ebx
-	subl %eax, %ebx
-	movl %ebx, errno
-	movl $-1, %eax
-exit_gettime:
+	CALL_OS(10)
+
 	popl %ebp
 	ret
