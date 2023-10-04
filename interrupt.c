@@ -8,6 +8,7 @@
 #include <io.h>
 #include <entry.h>
 #include <sys_call_table.h>
+#include <devices.h>
 
 #include <zeos_interrupt.h>
 
@@ -104,4 +105,5 @@ void keyboard_routine() {
 
 void clock_routine() {
   zeos_show_clock();
+  ++zeos_ticks;
 }

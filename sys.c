@@ -69,3 +69,7 @@ int sys_write(int fd, char * buffer, int size) {
 
   return -5; // EIO
 }
+
+int sys_gettime() {
+  return zeos_ticks;
+}
