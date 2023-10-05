@@ -14,7 +14,7 @@ int __attribute__ ((__section__(".text.main")))
 
   char ticks_buff[10] = "";
   int ticks = gettime();
-  itoa(ticks, ticks_buff);
+  itoa(ticks, ticks_buff, 10);
   write(1, ticks_buff, strlen(ticks_buff));
   write(1, " ticks passed...\n", 17);
 

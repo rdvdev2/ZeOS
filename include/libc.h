@@ -12,7 +12,7 @@ int write(int fd, char *buffer, int size);
 
 int gettime();
 
-void itoa(int a, char *b);
+void itoa(int value, char * str, int base);
 
 int strlen(char *a);
 

@@ -86,11 +86,53 @@ void setIdt()
   set_handlers();
 
   /* INITIALIZATION CODE FOR INTERRUPT VECTOR */ 
+  setInterruptHandler(14, page_fault_handler_student, 0);
   setInterruptHandler(33, keyboard_handler, 0); 
   setInterruptHandler(32, clock_handler, 0);
   setTrapHandler(0x80, system_call_handler, 3);
 
   set_idt_reg(&idtR);
+}
+
+inline char itoc(int n)
+{
+  if (n < 10) return '0' + n;
+  else return 'a' + n - 10;
+}
+
+void itoa_student(int value, char * str, int base)
+{
+  if (value == 0) {
+    str[0] = '0';
+    str[1] = '\0';
+    return;
+  }
+
+  int i = 0;
+  while (value > 0)
+  {
+    str[i] = itoc(value % base);
+    value /= base;
+    ++i;
+  }
+
+  for (int j = 0; j < i / 2; ++j)
+  {
+    char c = str[j];
+    str[j] = str[i - j - 1];
+    str[i - j - 1] = c;
+  }
+  str[i]=0;
+}
+
+void page_fault_routine_student(unsigned int eip) {
+  char eip_hex[30] = "";
+  itoa_student(eip, eip_hex, 16);
+
+  printk("\n\nProcess generates a PAGE FAULT exception at EIP: 0x");
+  printk(eip_hex);
+  printk("\n");
+  for (;;);
 }
 
 void keyboard_routine() {

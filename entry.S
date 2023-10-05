@@ -67,6 +67,18 @@
       movb $0x20, %al; \
       outb %al, $0x20;
 
+// EXCEPTIONS
+
+ENTRY(page_fault_handler_student)
+	SAVE_ALL
+
+	pushl 0x30(%esp)
+	call page_fault_routine_student
+	addl $4, %esp
+
+	RESTORE_ALL
+	addl $4, %esp
+	iret
 
 // INTERRUPTS
 

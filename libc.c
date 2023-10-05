@@ -9,28 +9,35 @@
 
 int errno;
 
-void itoa(int a, char *b)
+inline char itoc(int n)
 {
-  int i, i1;
-  char c;
-  
-  if (a==0) { b[0]='0'; b[1]=0; return ;}
-  
-  i=0;
-  while (a>0)
-  {
-    b[i]=(a%10)+'0';
-    a=a/10;
-    i++;
+  if (n < 10) return '0' + n;
+  else return 'a' + n - 10;
+}
+
+void itoa(int value, char * str, int base)
+{
+  if (value == 0) {
+    str[0] = '0';
+    str[1] = '\0';
+    return;
   }
   
-  for (i1=0; i1<i/2; i1++)
+  int i = 0;
+  while (value > 0)
   {
-    c=b[i1];
-    b[i1]=b[i-i1-1];
-    b[i-i1-1]=c;
+    str[i] = itoc(value % base);
+    value /= base;
+    ++i;
   }
-  b[i]=0;
+  
+  for (int j = 0; j < i / 2; ++j)
+  {
+    char c = str[j];
+    str[j] = str[i - j - 1];
+    str[i - j - 1] = c;
+  }
+  str[i]=0;
 }
 
 int strlen(char *a)
