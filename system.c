@@ -81,6 +81,9 @@ int __attribute__((__section__(".text.main")))
   setIdt(); /* Definicio del vector de interrupcions */
   setTSS(); /* Definicio de la TSS */
 
+  /* Initialize fast syscalls */
+  init_fast_syscalls();
+
   /* Initialize Memory */
   init_mm();
 
