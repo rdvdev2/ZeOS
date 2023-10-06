@@ -5,7 +5,6 @@
 #include <asm.h>
 #include <segment.h>
 
-
 /**************************************************/
 /**** Save & Restore ******************************/
 /**                                              **/
@@ -50,4 +49,68 @@
       movl $__KERNEL_DS, %edx;    \
       movl %edx, %ds;           \
       movl %edx, %es
+
+#define RESTORE_ALL \
+      popl %edx; \
+      popl %ecx; \
+      popl %ebx; \
+      popl %esi; \
+      popl %edi; \
+      popl %ebp; \
+      popl %eax; \
+      popl %ds; \
+      popl %es; \
+      popl %fs; \
+      popl %gs;
+
+#define EOI \
+      movb $0x20, %al; \
+      outb %al, $0x20;
+
+// EXCEPTIONS
+
+ENTRY(page_fault_handler_student)
+	SAVE_ALL
+
+	pushl 0x30(%esp)
+	call page_fault_routine_student
+	addl $4, %esp
+
+	RESTORE_ALL
+	addl $4, %esp
+	iret
+
+// INTERRUPTS
+
+ENTRY(keyboard_handler)
+	SAVE_ALL
+	EOI
+	call keyboard_routine
+	RESTORE_ALL
+	iret
+
+ENTRY(clock_handler)
+	SAVE_ALL
+	EOI
+	call clock_routine
+	RESTORE_ALL
+	iret
+
+
+// SYSCALLS
+
+ENTRY (system_call_handler)
+        SAVE_ALL
+        cmpl $0, %eax
+        jl err
+        cmpl $MAX_SYSCALL, %eax
+        jg err
+        call *sys_call_table(, %eax, 0x04)
+        jmp fin
+err:
+        movl $-38, %eax // ENOSYS
+fin:
+        movl %eax, 0x18(%esp)
+        RESTORE_ALL
+        iret
 

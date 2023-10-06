@@ -45,3 +45,31 @@ int sys_fork()
 void sys_exit()
 {  
 }
+
+int sys_write(int fd, char * buffer, int size) {
+  int check_fd_result = check_fd(fd, ESCRIPTURA);
+  if (check_fd_result != 0) {
+    return check_fd_result;
+  }
+
+  if (buffer == (char *) 0) {
+    return -14; // EFAULT
+  }
+
+  if (size <= 0) {
+    return -22; // EINVAL
+  }
+
+  char sys_buffer[size];
+  copy_from_user(buffer, sys_buffer, size);
+
+  switch (fd) {
+    case 1: return sys_write_console(sys_buffer, size);
+  }
+
+  return -5; // EIO
+}
+
+int sys_gettime() {
+  return zeos_ticks;
+}

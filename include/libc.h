@@ -10,7 +10,9 @@
 
 int write(int fd, char *buffer, int size);
 
-void itoa(int a, char *b);
+int gettime();
+
+void itoa(int value, char * str, int base);
 
 int strlen(char *a);
 

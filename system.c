@@ -11,6 +11,7 @@
 #include <mm.h>
 #include <io.h>
 #include <utils.h>
+#include <devices.h>
 #include <zeos_mm.h> /* TO BE DELETED WHEN ADDED THE PROCESS MANAGEMENT CODE TO BECOME MULTIPROCESS */
 
 
@@ -97,8 +98,10 @@ int __attribute__((__section__(".text.main")))
   /* Move user code/data now (after the page table initialization) */
   copy_data((void *) KERNEL_START + *p_sys_size, (void*)L_USER_START, *p_usr_size);
 
+  /* Reset tick counter */
+  zeos_ticks = 0;
 
-  printk("Entering user mode...");
+  printk("Entering user mode...\n");
 
   enable_int();
   /*
