@@ -22,6 +22,15 @@ CFLAGS = -m32 -O2  -g -fno-omit-frame-pointer -ffreestanding -Wall -I$(INCLUDEDI
 ASMFLAGS = -I$(INCLUDEDIR)
 LDFLAGS = -g -melf_i386
 
+# Comment out this line to return to int implementation of syscalls
+FAST_SYSCALLS = 1
+
+ifdef FAST_SYSCALLS
+CFLAGS += -Dfast_syscalls
+ASMFLAGS += -Dfast_syscalls
+endif
+
+
 SYSOBJ = \
 	interrupt.o \
 	entry.o \
@@ -36,6 +45,7 @@ SYSOBJ = \
 	list.o \
 	memcpy.o \
 	klibc.o \
+	msrs.o \
 
 LIBZEOS = -L . -l zeos
 
@@ -68,6 +78,9 @@ entry.s: entry.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 sys_call_table.s: sys_call_table.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
+	$(CPP) $(ASMFLAGS) -o $@ $<
+
+msrs.s: msrs.S $(INCLUDEDIR)/asm.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 wrappers.s: wrappers.S $(INCLUDEDIR)/asm.h

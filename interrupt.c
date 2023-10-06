@@ -10,6 +10,7 @@
 #include <sys_call_table.h>
 #include <devices.h>
 #include <klibc.h>
+#include <msrs.h>
 
 #include <zeos_interrupt.h>
 
@@ -93,6 +94,13 @@ void setIdt()
   setTrapHandler(0x80, system_call_handler, 3);
 
   set_idt_reg(&idtR);
+}
+
+void init_fast_syscalls()
+{
+  writeMSR(SYSENTER_CS_MSR, __KERNEL_CS);
+  writeMSR(SYSENTER_ESP_MSR, INITIAL_ESP);
+  writeMSR(SYSENTER_EIP_MSR, (unsigned long) system_call_handler_sysenter);
 }
 
 void page_fault_routine_student(unsigned int eip) {
