@@ -9,6 +9,7 @@
 #include <entry.h>
 #include <sys_call_table.h>
 #include <devices.h>
+#include <klibc.h>
 
 #include <zeos_interrupt.h>
 
@@ -94,40 +95,9 @@ void setIdt()
   set_idt_reg(&idtR);
 }
 
-inline char itoc(int n)
-{
-  if (n < 10) return '0' + n;
-  else return 'a' + n - 10;
-}
-
-void itoa_student(int value, char * str, int base)
-{
-  if (value == 0) {
-    str[0] = '0';
-    str[1] = '\0';
-    return;
-  }
-
-  int i = 0;
-  while (value > 0)
-  {
-    str[i] = itoc(value % base);
-    value /= base;
-    ++i;
-  }
-
-  for (int j = 0; j < i / 2; ++j)
-  {
-    char c = str[j];
-    str[j] = str[i - j - 1];
-    str[i - j - 1] = c;
-  }
-  str[i]=0;
-}
-
 void page_fault_routine_student(unsigned int eip) {
   char eip_hex[30] = "";
-  itoa_student(eip, eip_hex, 16);
+  k_itoa(eip, eip_hex, 16);
 
   printk("\n\nProcess generates a PAGE FAULT exception at EIP: 0x");
   printk(eip_hex);

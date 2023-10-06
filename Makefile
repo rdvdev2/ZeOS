@@ -35,6 +35,7 @@ SYSOBJ = \
 	hardware.o \
 	list.o \
 	memcpy.o \
+	klibc.o \
 
 LIBZEOS = -L . -l zeos
 
