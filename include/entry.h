@@ -13,4 +13,4 @@ void clock_handler();
 
 void system_call_handler_sysenter();
 
-#endif  /* __ENTRY_H__ */
+#endif /* __ENTRY_H__ */
