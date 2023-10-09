@@ -12,7 +12,8 @@
 extern Gate idt[IDT_ENTRIES];
 extern Register idtR;
 
-void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL);
+void setInterruptHandler(int vector, void (*handler)(),
+                         int maxAccessibleFromPL);
 void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL);
 
 void setIdt();
@@ -21,4 +22,4 @@ void init_fast_syscalls();
 
 void keyboard_routine();
 
-#endif  /* __INTERRUPT_H__ */
+#endif /* __INTERRUPT_H__ */
