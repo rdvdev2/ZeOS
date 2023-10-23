@@ -3,6 +3,7 @@
  */
 
 #include "list.h"
+#include <msrs.h>
 #include <io.h>
 #include <mm.h>
 #include <sched.h>
@@ -11,6 +12,8 @@ union task_union task[NR_TASKS] __attribute__((__section__(".data.task")));
 
 struct list_head free_queue;
 struct list_head ready_queue;
+
+struct task_struct * idle_task;
 
 #if 0
 struct task_struct *list_head_to_task_struct(struct list_head *l)
@@ -51,9 +54,37 @@ void cpu_idle(void) {
   }
 }
 
-void init_idle(void) {}
+void init_idle(void) {
+  struct list_head * pcb_entry = list_first(&free_queue);
+  list_del(pcb_entry);
+  union task_union * pcb = list_entry(pcb_entry, union task_union, task.free_queue_anchor);
 
-void init_task1(void) {}
+  pcb->task.PID = 0;
+
+  allocate_DIR(&pcb->task);
+
+  pcb->stack[KERNEL_STACK_SIZE-1] = (unsigned long) cpu_idle;
+  pcb->stack[KERNEL_STACK_SIZE-2] = 0;
+  pcb->task.esp = (unsigned long) &pcb->stack[KERNEL_STACK_SIZE-2];
+
+  idle_task = &pcb->task;
+}
+
+void init_task1(void) {
+  struct list_head * pcb_entry = list_first(&free_queue);
+  list_del(pcb_entry);
+  union task_union * pcb = list_entry(pcb_entry, union task_union, task.free_queue_anchor);
+
+  pcb->task.PID = 1;
+
+  allocate_DIR(&pcb->task);
+  set_user_pages(&pcb->task);
+
+  tss.esp = (unsigned long) &pcb->stack[KERNEL_STACK_SIZE-1];
+  writeMSR(SYSENTER_ESP_MSR, (unsigned long) &pcb->stack[KERNEL_STACK_SIZE-1]);
+
+  set_cr3(pcb->task.dir_pages_baseAddr);
+}
 
 void init_sched() {
   INIT_LIST_HEAD(&free_queue);
