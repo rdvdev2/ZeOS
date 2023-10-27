@@ -55,3 +55,23 @@ ENTRY(gettime)
 
 	popl %ebp
 	ret
+
+ENTRY(getpid)
+	pushl %ebp
+	movl %esp, %ebp
+
+	CALL_OS(20)
+	HANDLE_ERRORS(20)
+
+	popl %ebp
+	ret
+
+ENTRY(fork)
+	pushl %ebp
+	movl %esp, %ebp
+	
+	CALL_OS(2)
+	HANDLE_ERRORS(2)
+
+	pop %ebp
+	ret
