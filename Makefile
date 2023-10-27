@@ -46,6 +46,8 @@ SYSOBJ = \
 	memcpy.o \
 	klibc.o \
 	msrs.o \
+	task_switch.o \
+	inner_task_switch.o \
 
 LIBZEOS = -L . -l zeos
 
@@ -83,8 +85,12 @@ sys_call_table.s: sys_call_table.S $(INCLUDEDIR)/asm.h $(INCLUDEDIR)/segment.h
 msrs.s: msrs.S $(INCLUDEDIR)/asm.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
+task_switch.s: task_switch.S $(INCLUDEDIR)/asm.h
+	$(CPP) $(ASMFLAGS) -o $@ $<
+
 wrappers.s: wrappers.S $(INCLUDEDIR)/asm.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
+
 
 user.o:user.c $(INCLUDEDIR)/libc.h
 
@@ -93,6 +99,8 @@ interrupt.o:interrupt.c $(INCLUDEDIR)/interrupt.h $(INCLUDEDIR)/segment.h $(INCL
 io.o:io.c $(INCLUDEDIR)/io.h
 
 sched.o:sched.c $(INCLUDEDIR)/sched.h
+
+inner_task_switch.o:inner_task_switch.c $(INCLUDEDIR)/sched.h
 
 libc.o:libc.c $(INCLUDEDIR)/libc.h
 

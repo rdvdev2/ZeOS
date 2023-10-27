@@ -1,6 +1,7 @@
 /*
  * interrupt.c -
  */
+#include <list.h>
 #include <devices.h>
 #include <entry.h>
 #include <hardware.h>
@@ -11,6 +12,8 @@
 #include <segment.h>
 #include <sys_call_table.h>
 #include <types.h>
+
+#include <inner_task_switch.h>
 
 #include <zeos_interrupt.h>
 
@@ -118,4 +121,6 @@ void keyboard_routine() {
 void clock_routine() {
   zeos_show_clock();
   ++zeos_ticks;
+
+  if(zeos_ticks == 10000)  task_switch(idle_task);
 }
