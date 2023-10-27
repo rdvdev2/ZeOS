@@ -21,8 +21,12 @@ int __attribute__((__section__(".text.main"))) main(void) {
   while (1) {
     if (gettime() > next) {
       next += 300;
+      char pid_buff[5] = "";
+      int pid = getpid();
+      itoa(pid, pid_buff, 5);
 
       write(1, "+300 ticks!\n", 12);
+      write(1, pid_buff, strlen(pid_buff));
     }
   }
 }
