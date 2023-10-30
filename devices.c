@@ -2,6 +2,8 @@
 #include <list.h>
 #include <utils.h>
 
+unsigned int zeos_ticks;
+
 // Queue for blocked processes in I/O
 struct list_head blocked;
 
