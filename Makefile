@@ -48,6 +48,7 @@ SYSOBJ = \
 	msrs.o \
 	task_switch.o \
 	inner_task_switch.o \
+	stack.o \
 
 LIBZEOS = -L . -l zeos
 
@@ -86,6 +87,9 @@ msrs.s: msrs.S $(INCLUDEDIR)/asm.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 task_switch.s: task_switch.S $(INCLUDEDIR)/asm.h
+	$(CPP) $(ASMFLAGS) -o $@ $<
+
+stack.s: stack.S $(INCLUDEDIR)/asm.h
 	$(CPP) $(ASMFLAGS) -o $@ $<
 
 wrappers.s: wrappers.S $(INCLUDEDIR)/asm.h
