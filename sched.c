@@ -81,7 +81,7 @@ void init_task1(void) {
   allocate_DIR(&pcb->task);
   set_user_pages(&pcb->task);
 
-  tss.esp = (unsigned long) &pcb->stack[KERNEL_STACK_SIZE-1];
+  tss.esp0 = (unsigned long) &pcb->stack[KERNEL_STACK_SIZE-1];
   writeMSR(SYSENTER_ESP_MSR, (unsigned long) &pcb->stack[KERNEL_STACK_SIZE-1]);
 
   set_cr3(pcb->task.dir_pages_baseAddr);
