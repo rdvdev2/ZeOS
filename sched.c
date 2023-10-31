@@ -14,6 +14,7 @@ struct list_head free_queue;
 struct list_head ready_queue;
 
 struct task_struct * idle_task;
+struct task_struct * task1_task;
 
 #if 0
 struct task_struct *list_head_to_task_struct(struct list_head *l)
@@ -84,6 +85,8 @@ void init_task1(void) {
   writeMSR(SYSENTER_ESP_MSR, (unsigned long) &pcb->stack[KERNEL_STACK_SIZE-1]);
 
   set_cr3(pcb->task.dir_pages_baseAddr);
+
+  task1_task = &pcb->task;
 }
 
 void init_sched() {
