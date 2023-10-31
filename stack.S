@@ -6,7 +6,7 @@ ENTRY(stack_switch)
 
 	call current
 	movl %ebp, 8(%eax)
-	movl 8(%ebp), %ebx #Si algo misteriosamente no va, ponle un 16
+	movl 8(%ebp), %ebx
 	movl 8(%ebx), %esp
 
 	pop %ebp
