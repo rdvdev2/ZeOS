@@ -14,8 +14,6 @@
 #include <sys_call_table.h>
 #include <types.h>
 
-#include <inner_task_switch.h>
-
 #include <zeos_interrupt.h>
 
 Gate idt[IDT_ENTRIES];
