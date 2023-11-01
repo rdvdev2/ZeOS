@@ -8,13 +8,13 @@
 
 #include <stats.h>
 
-int write(int fd, char *buffer, int size);
+int write(int fd, const char *buffer, int size);
 
 int gettime();
 
 void itoa(int value, char *str, int base);
 
-int strlen(char *a);
+int strlen(const char *a);
 
 int getpid();
 

@@ -8,7 +8,7 @@
 AS86 = as86 -0 -a
 LD86 = ld86 -0
 
-HOSTCFLAGS = -Wall -Wstrict-prototypes -g
+HOSTCFLAGS = -Wall -Werror -Wstrict-prototypes -g
 HOSTCC = gcc
 CC = gcc
 AS = as --32
@@ -18,7 +18,7 @@ OBJCOPY = objcopy -O binary -R .note -R .comment -S
 INCLUDEDIR = include
 
 
-CFLAGS = -m32 -O2  -g -fno-omit-frame-pointer -ffreestanding -Wall -I$(INCLUDEDIR) -fno-PIC
+CFLAGS = -m32 -O2  -g -fno-omit-frame-pointer -ffreestanding -Wall -Werror -I$(INCLUDEDIR) -fno-PIC
 ASMFLAGS = -I$(INCLUDEDIR)
 LDFLAGS = -g -melf_i386
 
