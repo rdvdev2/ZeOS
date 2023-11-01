@@ -2,16 +2,13 @@
  * sys.c - Syscalls implementation
  */
 #include <devices.h>
-
-#include <utils.h>
-
 #include <io.h>
-
+#include <list.h>
 #include <mm.h>
-
 #include <mm_address.h>
-
+#include <random.h>
 #include <sched.h>
+#include <utils.h>
 
 #define LECTURA 0
 #define ESCRIPTURA 1
@@ -29,8 +26,6 @@ int sys_ni_syscall() { return -38; /*ENOSYS*/ }
 int sys_getpid() { return current()->PID; }
 
 int sys_fork() {
-  int PID = -1;
-
   if (list_empty(&free_queue))
     return -11;
   struct list_head *new_entry = list_first(&free_queue);
@@ -87,7 +82,16 @@ int sys_fork() {
   del_ss_pag(parent_PT, temp_page);
   set_cr3(current()->dir_pages_baseAddr);
 
-  return PID;
+  new->task.PID = rand();
+
+  new->stack[KERNEL_STACK_SIZE - 19] = (unsigned long)ret_from_fork;
+  new->stack[KERNEL_STACK_SIZE - 20] =
+      (unsigned long)&new->stack[KERNEL_STACK_SIZE - 18];
+  new->task.esp = (unsigned long)&new->stack[KERNEL_STACK_SIZE - 20];
+
+  list_add_tail(&new->task.ready_queue_anchor, &ready_queue);
+
+  return new->task.PID;
 }
 
 void sys_exit() {}

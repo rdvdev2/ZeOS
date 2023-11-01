@@ -17,6 +17,13 @@ int __attribute__((__section__(".text.main"))) main(void) {
   write(1, ticks_buff, strlen(ticks_buff));
   write(1, " ticks passed...\n", 17);
 
+  int fork_ret = fork();
+  char fr_buff[10] = "";
+  itoa(fork_ret, fr_buff, 10);
+  write(1, "Fork returned: ", 15);
+  write(1, fr_buff, strlen(fr_buff));
+  write(1, "\n\n", 2);
+
   int next = gettime() + 300;
   while (1) {
     if (gettime() > next) {
