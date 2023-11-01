@@ -140,3 +140,7 @@ gdb: zeos.bin
 
 emuldbg: zeos.bin
 	bochs_nogdb -q -f .bochsrc
+
+.PHONY: format
+format:
+	clang-format -i *.c include/*.h
