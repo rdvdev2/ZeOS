@@ -23,17 +23,23 @@ int __attribute__((__section__(".text.main"))) main(void) {
   write(1, "Fork returned: ", 15);
   write(1, fr_buff, strlen(fr_buff));
   write(1, "\n\n", 2);
+  if (fork_ret < 0)
+    perror();
+
+  int pid = getpid();
+
+  char pid_buff[15] = "PID: ";
+  itoa(pid, &pid_buff[5], 10);
+  int last = strlen(pid_buff);
+  pid_buff[last] = '\n';
+  pid_buff[last + 1] = '\0';
+  write(1, pid_buff, strlen(pid_buff));
 
   int next = gettime() + 300;
   while (1) {
     if (gettime() > next) {
       next += 300;
-      char pid_buff[5] = "";
-      int pid = getpid();
-      itoa(pid, pid_buff, 10);
-
       write(1, "+300 ticks!\n", 12);
-      write(1, pid_buff, strlen(pid_buff));
     }
   }
 }
