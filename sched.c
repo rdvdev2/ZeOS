@@ -2,8 +2,9 @@
  * sched.c - initializes struct for task 0 anda task 1
  */
 
-#include "list.h"
+#include <devices.h>
 #include <io.h>
+#include <list.h>
 #include <mm.h>
 #include <msrs.h>
 #include <sched.h>
@@ -15,7 +16,6 @@ struct list_head free_queue;
 struct list_head ready_queue;
 
 struct task_struct *idle_task;
-struct task_struct *task1_task;
 
 #if 0
 struct task_struct *list_head_to_task_struct(struct list_head *l)
@@ -25,6 +25,8 @@ struct task_struct *list_head_to_task_struct(struct list_head *l)
 #endif
 
 extern struct list_head blocked;
+
+int current_task_remaining_quantum;
 
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry *get_DIR(struct task_struct *t) {
@@ -70,6 +72,10 @@ void init_idle(void) {
   pcb->stack[KERNEL_STACK_SIZE - 2] = 0;
   pcb->task.esp = (unsigned long)&pcb->stack[KERNEL_STACK_SIZE - 2];
 
+  set_quantum(&pcb->task, 0);
+  // We don't set any state, this task is executed only when there is no other
+  // task available
+
   idle_task = &pcb->task;
 }
 
@@ -89,12 +95,16 @@ void init_task1(void) {
 
   set_cr3(pcb->task.dir_pages_baseAddr);
 
-  task1_task = &pcb->task;
+  set_quantum(&pcb->task, 10);
+  pcb->task.state =
+      ST_RUN; // The init task is invoked by the OS after initialization
+  current_task_remaining_quantum = 10;
 }
 
 void init_sched() {
   INIT_LIST_HEAD(&free_queue);
   INIT_LIST_HEAD(&ready_queue);
+  INIT_LIST_HEAD(&blocked);
 
   for (int i = 0; i < NR_TASKS; ++i) {
     list_add(&task[i].task.free_queue_anchor, &free_queue);
@@ -118,3 +128,71 @@ void inner_task_switch(union task_union *new) {
 }
 
 int ret_from_fork() { return 0; }
+
+unsigned int last_update_sched_data_rr_tick = 0;
+
+void update_sched_data_rr() {
+  int elapsed_ticks = zeos_ticks - last_update_sched_data_rr_tick;
+
+  current_task_remaining_quantum -= elapsed_ticks;
+  if (current_task_remaining_quantum < 0)
+    current_task_remaining_quantum = 0;
+
+  last_update_sched_data_rr_tick += elapsed_ticks;
+}
+
+int needs_sched_rr() {
+  return current_task_remaining_quantum == 0 && !list_empty(&ready_queue);
+}
+
+void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
+  if (current() == idle_task)
+    return;
+
+  switch (t->state) {
+  case ST_RUN:
+    // There is no queue
+    break;
+  case ST_READY:
+    list_del(&t->ready_queue_anchor);
+    break;
+  case ST_BLOCKED:
+    list_del(&t->blocked_queue_anchor);
+    break;
+  }
+
+  if (dest == NULL) {
+    t->state = ST_RUN;
+    // There is no queue
+  } else if (dest == &ready_queue) {
+    t->state = ST_READY;
+    list_add_tail(&t->ready_queue_anchor, dest);
+  } else if (dest == &blocked) {
+    t->state = ST_BLOCKED;
+    list_add_tail(&t->blocked_queue_anchor, dest);
+  }
+}
+
+void sched_next_rr() {
+  struct list_head *next_head = list_first(&ready_queue);
+  union task_union *next =
+      list_entry(next_head, union task_union, task.ready_queue_anchor);
+
+  update_process_state_rr(&next->task, NULL);
+  current_task_remaining_quantum = get_quantum(&next->task);
+  task_switch(next);
+}
+
+int get_quantum(struct task_struct *t) { return t->quantum; }
+
+void set_quantum(struct task_struct *t, int new_quantum) {
+  t->quantum = new_quantum;
+}
+
+void schedule() {
+  update_sched_data_rr();
+  if (needs_sched_rr()) {
+    update_process_state_rr(current(), &ready_queue);
+    sched_next_rr();
+  }
+}

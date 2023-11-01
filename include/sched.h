@@ -20,6 +20,9 @@ struct task_struct {
   unsigned long esp;
   struct list_head free_queue_anchor;
   struct list_head ready_queue_anchor;
+  struct list_head blocked_queue_anchor;
+  enum state_t state;
+  int quantum;
 };
 
 union task_union {
@@ -29,7 +32,6 @@ union task_union {
 
 extern union task_union task[NR_TASKS]; /* Vector de tasques */
 extern struct task_struct *idle_task;
-extern struct task_struct *task1_task;
 
 extern struct list_head free_queue;
 extern struct list_head ready_queue;
@@ -62,6 +64,11 @@ void sched_next_rr();
 void update_process_state_rr(struct task_struct *t, struct list_head *dest);
 int needs_sched_rr();
 void update_sched_data_rr();
+
+int get_quantum(struct task_struct *t);
+void set_quantum(struct task_struct *t, int new_quantum);
+
+void schedule();
 
 int ret_from_fork();
 

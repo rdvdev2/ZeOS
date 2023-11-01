@@ -89,7 +89,7 @@ int sys_fork() {
       (unsigned long)&new->stack[KERNEL_STACK_SIZE - 18];
   new->task.esp = (unsigned long)&new->stack[KERNEL_STACK_SIZE - 20];
 
-  list_add_tail(&new->task.ready_queue_anchor, &ready_queue);
+  update_process_state_rr(&new->task, &ready_queue);
 
   return new->task.PID;
 }
