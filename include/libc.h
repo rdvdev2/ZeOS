@@ -16,6 +16,10 @@ void itoa(int value, char *str, int base);
 
 int strlen(const char *a);
 
+char *strcpy(char *dst, const char *src);
+
+char *strcat(char *dst, const char *src);
+
 int getpid();
 
 int fork();

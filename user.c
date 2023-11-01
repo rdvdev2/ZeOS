@@ -11,35 +11,43 @@ int __attribute__((__section__(".text.main"))) main(void) {
 
   write(1, "Hello, ZeOS!\n", 14);
 
-  char ticks_buff[10] = "";
   int ticks = gettime();
+  char ticks_buff[40] = "";
   itoa(ticks, ticks_buff, 10);
+
+  strcat(ticks_buff, " ticks passed...\n");
   write(1, ticks_buff, strlen(ticks_buff));
-  write(1, " ticks passed...\n", 17);
 
   int fork_ret = fork();
   char fr_buff[10] = "";
   itoa(fork_ret, fr_buff, 10);
-  write(1, "Fork returned: ", 15);
-  write(1, fr_buff, strlen(fr_buff));
-  write(1, "\n\n", 2);
+
+  char fork_msg_buff[40] = "Fork returned: ";
+  strcat(fork_msg_buff, fr_buff);
+  strcat(fork_msg_buff, "\n");
+  write(1, fork_msg_buff, sizeof(fork_msg_buff));
+
   if (fork_ret < 0)
     perror();
 
   int pid = getpid();
+  char pid_buff[5] = "";
+  itoa(pid, pid_buff, 10);
 
-  char pid_buff[15] = "PID: ";
-  itoa(pid, &pid_buff[5], 10);
-  int last = strlen(pid_buff);
-  pid_buff[last] = '\n';
-  pid_buff[last + 1] = '\0';
-  write(1, pid_buff, strlen(pid_buff));
+  char pid_msg_buff[15] = "PID: ";
+  strcat(pid_msg_buff, pid_buff);
+  strcat(pid_msg_buff, "\n\n");
+  write(1, pid_msg_buff, strlen(pid_msg_buff));
 
   int next = gettime() + 300;
   while (1) {
     if (gettime() > next) {
       next += 300;
-      write(1, "+300 ticks!\n", 12);
+
+      char ticks_buff2[40] = "(";
+      strcat(ticks_buff2, pid_buff);
+      strcat(ticks_buff2, ") +300 ticks!\n");
+      write(1, ticks_buff2, sizeof(ticks_buff2));
     }
   }
 }

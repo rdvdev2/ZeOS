@@ -49,6 +49,23 @@ int strlen(const char *a) {
   return i;
 }
 
+char *strcpy(char *dst, const char *src) {
+  int i;
+  for (i = 0; src[i] != '\0'; ++i) {
+    dst[i] = src[i];
+  }
+  dst[i] = '\0';
+
+  return dst;
+}
+
+char *strcat(char *dst, const char *src) {
+  int last = strlen(dst);
+  strcpy(&dst[last], src);
+
+  return dst;
+}
+
 void perror() {
   const char *msg = sys_errlist[errno];
   write(1, msg, strlen(msg));
