@@ -30,54 +30,60 @@ int sys_getpid() { return current()->PID; }
 
 int sys_fork() {
   int PID = -1;
-  
-  if(list_empty(&free_queue)) return -11;
-  struct list_head * new_entry = list_first(&free_queue);
+
+  if (list_empty(&free_queue))
+    return -11;
+  struct list_head *new_entry = list_first(&free_queue);
   list_del(new_entry);
-  union task_union * new = list_entry(new_entry, union task_union, task.free_queue_anchor);
+  union task_union *new =
+      list_entry(new_entry, union task_union, task.free_queue_anchor);
 
   copy_data(current(), new, sizeof(union task_union));
 
   allocate_DIR(&new->task);
- 
-  page_table_entry *parent_PT = get_PT(current()); 
-  int user_page_nr = 0; 
 
-  int temp_page = -1; 
-  for(int i = NUM_PAG_KERNEL; i < TOTAL_PAGES; ++i){ 
-    if(parent_PT[i].bits.present) ++user_page_nr;
-    else temp_page = i;
+  page_table_entry *parent_PT = get_PT(current());
+  int user_page_nr = 0;
+
+  int temp_page = -1;
+  for (int i = NUM_PAG_KERNEL; i < TOTAL_PAGES; ++i) {
+    if (parent_PT[i].bits.present)
+      ++user_page_nr;
+    else
+      temp_page = i;
   }
-   
-  if(temp_page < 0) return -12; 
+
+  if (temp_page < 0)
+    return -12;
 
   int phys_frames[user_page_nr];
 
-  for(int i = 0; i < user_page_nr; ++i) {
+  for (int i = 0; i < user_page_nr; ++i) {
     phys_frames[i] = alloc_frame();
-    if(phys_frames[i] == -1) {
-      for(int j = 0; j < i; ++j) free_frame(phys_frames[j]);
+    if (phys_frames[i] == -1) {
+      for (int j = 0; j < i; ++j)
+        free_frame(phys_frames[j]);
       return -12;
     }
   }
 
   page_table_entry *new_PT = get_PT(&new->task);
-  
-  
-  copy_data(parent_PT, new_PT, sizeof(page_table_entry)*NUM_PAG_KERNEL); 
-  
+
+  copy_data(parent_PT, new_PT, sizeof(page_table_entry) * NUM_PAG_KERNEL);
+
   int *next_phys_frame = phys_frames;
-  for(int i = NUM_PAG_KERNEL; i < TOTAL_PAGES; ++i) {
-    if(parent_PT[i].bits.present) {
+  for (int i = NUM_PAG_KERNEL; i < TOTAL_PAGES; ++i) {
+    if (parent_PT[i].bits.present) {
       int current_frame = *(next_phys_frame++);
       set_ss_pag(new_PT, i, current_frame);
-      
+
       set_ss_pag(parent_PT, temp_page, current_frame);
       set_cr3(current()->dir_pages_baseAddr);
-      copy_data((void *) (i * PAGE_SIZE), (void *) (temp_page * PAGE_SIZE), PAGE_SIZE);
+      copy_data((void *)(i * PAGE_SIZE), (void *)(temp_page * PAGE_SIZE),
+                PAGE_SIZE);
     }
   }
-  
+
   del_ss_pag(parent_PT, temp_page);
   set_cr3(current()->dir_pages_baseAddr);
 

@@ -1,15 +1,15 @@
 /*
  * interrupt.c -
  */
-#include <sched.h>
-#include <list.h>
 #include <devices.h>
 #include <entry.h>
 #include <hardware.h>
 #include <interrupt.h>
 #include <io.h>
 #include <klibc.h>
+#include <list.h>
 #include <msrs.h>
+#include <sched.h>
 #include <segment.h>
 #include <sys_call_table.h>
 #include <types.h>
@@ -123,8 +123,10 @@ void clock_routine() {
   zeos_show_clock();
   ++zeos_ticks;
 
-  if(zeos_ticks % 1000 == 0) {
-    if (current()->PID == 1) task_switch(idle_task);
-    else task_switch(task1_task);
+  if (zeos_ticks % 1000 == 0) {
+    if (current()->PID == 1)
+      task_switch(idle_task);
+    else
+      task_switch(task1_task);
   }
 }
