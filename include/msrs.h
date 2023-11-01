@@ -5,6 +5,6 @@
 #define SYSENTER_ESP_MSR 0x175
 #define SYSENTER_EIP_MSR 0x176
 
-void writeMSR(unsigned int msr, unsigned long value);
+void writeMSR(unsigned int msr, unsigned long long value);
 
 #endif
