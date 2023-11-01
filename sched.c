@@ -7,6 +7,7 @@
 #include <mm.h>
 #include <msrs.h>
 #include <sched.h>
+#include <stack.h>
 
 union task_union task[NR_TASKS] __attribute__((__section__(".data.task")));
 
@@ -105,4 +106,13 @@ struct task_struct *current() {
 
   __asm__ __volatile__("movl %%esp, %0" : "=g"(ret_value));
   return (struct task_struct *)(ret_value & 0xfffff000);
+}
+
+void inner_task_switch(union task_union *new) {
+  tss.esp0 = (unsigned long)&new->stack[KERNEL_STACK_SIZE - 1];
+  writeMSR(SYSENTER_ESP_MSR, (unsigned long)&new->stack[KERNEL_STACK_SIZE - 1]);
+
+  set_cr3((*new).task.dir_pages_baseAddr);
+
+  stack_switch(new);
 }
