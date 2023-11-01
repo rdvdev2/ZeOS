@@ -43,7 +43,6 @@ SYSOBJ = \
 	utils.o \
 	hardware.o \
 	list.o \
-	memcpy.o \
 	klibc.o \
 	msrs.o \
 	task_switch.o \
