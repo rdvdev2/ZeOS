@@ -40,7 +40,7 @@ int sys_fork() {
 
   allocate_DIR(&new->task);
  
-  page_table_entry *parent_PT = get_PT(&current()->task); 
+  page_table_entry *parent_PT = get_PT(current()); 
   int user_page_nr = 0; 
 
   int temp_page = -1; 
@@ -56,7 +56,7 @@ int sys_fork() {
   for(int i = 0; i < user_page_nr; ++i) {
     phys_frames[i] = alloc_frame();
     if(phys_frames[i] == -1) {
-      for(int j = 0; j < i; ++j) free_frame(phys_frames[j];
+      for(int j = 0; j < i; ++j) free_frame(phys_frames[j]);
       return -12;
     }
   }
@@ -66,20 +66,20 @@ int sys_fork() {
   
   copy_data(parent_PT, new_PT, sizeof(page_table_entry)*NUM_PAG_KERNEL); 
   
-  int *next_phys_frame = &phys_frames; 
+  int *next_phys_frame = phys_frames;
   for(int i = NUM_PAG_KERNEL; i < TOTAL_PAGES; ++i) {
     if(parent_PT[i].bits.present) {
       int current_frame = *(next_phys_frame++);
       set_ss_pag(new_PT, i, current_frame);
       
       set_ss_pag(parent_PT, temp_page, current_frame);
-      set_cr3(current()->task.dir_pages_baseAddr);
-      copy_data((void *) i * PAGE_SIZE, temp_page * PAGE_SIZE, PAGE_SIZE);
+      set_cr3(current()->dir_pages_baseAddr);
+      copy_data((void *) (i * PAGE_SIZE), (void *) (temp_page * PAGE_SIZE), PAGE_SIZE);
     }
   }
   
-  del_ss_pag(parent_TP, temp_page);
-  set_cr3(current()->task.dir_pages_baseAddr);
+  del_ss_pag(parent_PT, temp_page);
+  set_cr3(current()->dir_pages_baseAddr);
 
   return PID;
 }
