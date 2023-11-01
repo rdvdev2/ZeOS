@@ -3,9 +3,8 @@
  */
 
 #include <io.h>
-
-#include <memcpy.h>
 #include <types.h>
+#include <utils.h>
 
 /**************/
 /** Screen  ***/
@@ -26,8 +25,8 @@ Byte inb(unsigned short port) {
 
 void scroll_screen() {
   for (int i = 1; i < NUM_ROWS; ++i) {
-    memcpy((void *)(0xb8000 + (i - 1) * NUM_COLUMNS * 2),
-           (void *)(0xb8000 + i * NUM_COLUMNS * 2), NUM_COLUMNS * 2);
+    copy_data((void *)(0xb8000 + i * NUM_COLUMNS * 2),
+              (void *)(0xb8000 + (i - 1) * NUM_COLUMNS * 2), NUM_COLUMNS * 2);
   }
 }
 
