@@ -51,7 +51,6 @@ ENTRY(gettime)
 	movl %esp, %ebp
 
 	CALL_OS(10)
-	HANDLE_ERRORS(10)
 
 	popl %ebp
 	ret
@@ -61,7 +60,6 @@ ENTRY(getpid)
 	movl %esp, %ebp
 
 	CALL_OS(20)
-	HANDLE_ERRORS(20)
 
 	popl %ebp
 	ret
