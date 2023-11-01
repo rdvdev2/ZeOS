@@ -32,6 +32,7 @@ extern struct task_struct *idle_task;
 extern struct task_struct *task1_task;
 
 extern struct list_head free_queue;
+extern struct list_head ready_queue;
 
 #define KERNEL_ESP(t) (DWord) & (t)->stack[KERNEL_STACK_SIZE]
 
@@ -61,5 +62,7 @@ void sched_next_rr();
 void update_process_state_rr(struct task_struct *t, struct list_head *dest);
 int needs_sched_rr();
 void update_sched_data_rr();
+
+int ret_from_fork();
 
 #endif /* __SCHED_H__ */

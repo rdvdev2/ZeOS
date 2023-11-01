@@ -116,3 +116,5 @@ void inner_task_switch(union task_union *new) {
 
   stack_switch(new);
 }
+
+int ret_from_fork() { return 0; }
