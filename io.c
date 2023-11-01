@@ -28,12 +28,18 @@ void scroll_screen() {
     copy_data((void *)(0xb8000 + i * NUM_COLUMNS * 2),
               (void *)(0xb8000 + (i - 1) * NUM_COLUMNS * 2), NUM_COLUMNS * 2);
   }
+
+  for (int i = 0; i < NUM_COLUMNS * 2; ++i) {
+    *((char *)(0xb8000 + (NUM_ROWS - 1) * NUM_COLUMNS * 2 + i)) = 0;
+  }
 }
 
 void printc(char c) {
   __asm__ __volatile__("movb %0, %%al; outb $0xe9" ::"a"(
       c)); /* Magic BOCHS debug: writes 'c' to port 0xe9 */
-  if (c == '\n') {
+  if (c == '\0')
+    return;
+  else if (c == '\n') {
     x = 0;
     if (++y >= NUM_ROWS) {
       scroll_screen();
