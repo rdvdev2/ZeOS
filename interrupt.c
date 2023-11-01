@@ -123,8 +123,8 @@ void clock_routine() {
 
   if (zeos_ticks % 1000 == 0) {
     if (current()->PID == 1)
-      task_switch(idle_task);
+      task_switch((union task_union *)idle_task);
     else
-      task_switch(task1_task);
+      task_switch((union task_union *)task1_task);
   }
 }

@@ -38,7 +38,7 @@ void itoa(int value, char *str, int base) {
   str[i] = 0;
 }
 
-int strlen(char *a) {
+int strlen(const char *a) {
   int i;
 
   i = 0;
@@ -50,7 +50,7 @@ int strlen(char *a) {
 }
 
 void perror() {
-  char *msg = sys_errlist[errno];
+  const char *msg = sys_errlist[errno];
   write(1, msg, strlen(msg));
   write(1, "\n", 1);
 }
