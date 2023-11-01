@@ -47,7 +47,7 @@ in
 			bochs_gdb
 			bochs_nogdb
 			bear
-			clang-tools_6
+			clang-tools
 		];
 		hardeningDisable = ["all"];
 	}
