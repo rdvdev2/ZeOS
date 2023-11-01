@@ -10,3 +10,5 @@ user
 
 bochsout.txt
 
+compile_commands.json
+.cache/
