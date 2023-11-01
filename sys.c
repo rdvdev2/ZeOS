@@ -102,19 +102,44 @@ int sys_write(int fd, char *buffer, int size) {
     return -14; // EFAULT
   }
 
-  if (size <= 0) {
+  if (size == 0)
+    return 0;
+
+  if (size < 0)
     return -22; // EINVAL
-  }
 
-  char sys_buffer[size];
-  copy_from_user(buffer, sys_buffer, size);
-
+  int (*write_function)(char *, int);
   switch (fd) {
   case 1:
-    return sys_write_console(sys_buffer, size);
+    write_function = sys_write_console;
+    break;
+  default:
+    return -5; // EIO
   }
 
-  return -5; // EIO
+  int remaining = size;
+  while (remaining > 0) {
+    const int MAX_BUFF_SIZE = KERNEL_STACK_SIZE / 4;
+
+    int buff_size;
+    if (remaining > MAX_BUFF_SIZE)
+      buff_size = MAX_BUFF_SIZE;
+    else
+      buff_size = remaining;
+
+    char sys_buffer[buff_size];
+    copy_from_user(&buffer[size - remaining], sys_buffer, buff_size);
+    int written = write_function(sys_buffer, buff_size);
+
+    if (written <= 0)
+      return written;
+
+    remaining -= written;
+    if (written < buff_size)
+      return size - remaining;
+  }
+
+  return size;
 }
 
 int sys_gettime() { return zeos_ticks; }

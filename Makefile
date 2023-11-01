@@ -54,6 +54,7 @@ LIBZEOS = -L . -l zeos
 USROBJ = \
 	libc.o \
 	wrappers.o \
+	errors.o \
 	# libjp.a \
 
 all:zeos.bin
