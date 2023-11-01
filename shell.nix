@@ -46,6 +46,7 @@ in
 			gdb
 			bochs_gdb
 			bochs_nogdb
+			bear
 		];
 		hardeningDisable = ["all"];
 	}
