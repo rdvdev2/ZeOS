@@ -23,5 +23,20 @@ ENTRY(sys_call_table)
 	.long sys_ni_syscall
 	.long sys_ni_syscall
 	.long sys_getpid
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_get_stats
 .globl MAX_SYSCALL
 MAX_SYSCALL = (. - sys_call_table)

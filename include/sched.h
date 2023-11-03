@@ -8,6 +8,7 @@
 #include <list.h>
 #include <mm_address.h>
 #include <types.h>
+#include <stats.h>
 
 #define NR_TASKS 10
 #define KERNEL_STACK_SIZE 1024
@@ -22,6 +23,7 @@ struct task_struct {
   struct list_head ready_queue_anchor;
   struct list_head blocked_queue_anchor;
   enum state_t state;
+  struct stats st;
   int quantum;
 };
 
@@ -39,6 +41,8 @@ extern struct list_head ready_queue;
 #define KERNEL_ESP(t) (DWord) & (t)->stack[KERNEL_STACK_SIZE]
 
 #define INITIAL_ESP KERNEL_ESP(&task[1])
+
+void set_stats(struct task_struct *process);
 
 /* Inicialitza les dades del proces inicial */
 void init_task1(void);

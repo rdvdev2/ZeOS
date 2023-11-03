@@ -103,6 +103,7 @@ void sys_exit() {
 }
 
 int sys_write(int fd, char *buffer, int size) {
+  
   int check_fd_result = check_fd(fd, ESCRIPTURA);
   if (check_fd_result != 0) {
     return check_fd_result;
@@ -153,3 +154,5 @@ int sys_write(int fd, char *buffer, int size) {
 }
 
 int sys_gettime() { return zeos_ticks; }
+
+int sys_get_stats() { return 0;}
