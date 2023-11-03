@@ -82,3 +82,15 @@ ENTRY(exit)
 
 	pop %ebp
 	ret
+
+ENTRY(get_stats)
+	pushl %ebp
+	movl %esp, %ebp
+	
+	movl 8(%ebp), %edx
+	movl 12(%ebp), %ecx
+	CALL_OS(35)
+	HANDLE_ERRORS(35)
+
+	pop %ebp
+	ret

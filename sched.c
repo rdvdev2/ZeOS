@@ -3,6 +3,7 @@
  */
 
 #include <devices.h>
+#include <utils.h>
 #include <io.h>
 #include <list.h>
 #include <mm.h>
@@ -58,6 +59,16 @@ void cpu_idle(void) {
   }
 }
 
+void set_stats(struct task_struct *process) {
+  process->st.user_ticks = 0;
+  process->st.system_ticks = 0;
+  process->st.blocked_ticks = 0;
+  process->st.ready_ticks = 0;
+  process->st.elapsed_total_ticks = get_ticks();
+  process->st.total_trans = 0;
+  process->st.remaining_ticks = 0;
+}
+
 void init_idle(void) {
   struct list_head *pcb_entry = list_first(&free_queue);
   list_del(pcb_entry);
@@ -77,6 +88,7 @@ void init_idle(void) {
   // task available
 
   idle_task = &pcb->task;
+  set_stats(idle_task);
 }
 
 void init_task1(void) {
@@ -99,6 +111,8 @@ void init_task1(void) {
   pcb->task.state =
       ST_RUN; // The init task is invoked by the OS after initialization
   current_task_remaining_quantum = 10;
+  
+  set_stats(&pcb->task);
 }
 
 void init_sched() {
@@ -135,6 +149,7 @@ void update_sched_data_rr() {
   int elapsed_ticks = zeos_ticks - last_update_sched_data_rr_tick;
 
   current_task_remaining_quantum -= elapsed_ticks;
+  current()->st.remaining_ticks = current_task_remaining_quantum;
   if (current_task_remaining_quantum < 0)
     current_task_remaining_quantum = 0;
 
@@ -155,18 +170,25 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
     break;
   case ST_READY:
     list_del(&t->ready_queue_anchor);
+    t->st.ready_ticks += get_ticks() - t->st.elapsed_total_ticks;
+    t->st.elapsed_total_ticks = get_ticks();
     break;
   case ST_BLOCKED:
     list_del(&t->blocked_queue_anchor);
+    t->st.blocked_ticks += get_ticks() - t->st.elapsed_total_ticks;
+    t->st.elapsed_total_ticks = get_ticks();
     break;
   }
 
   if (dest == NULL) {
+    if(t->state == ST_READY) t->st.total_trans++; 
     t->state = ST_RUN;
     // There is no queue
   } else if (dest == &ready_queue) {
     t->state = ST_READY;
     list_add_tail(&t->ready_queue_anchor, dest);
+    t->st.system_ticks += get_ticks() - t->st.elapsed_total_ticks;
+    t->st.elapsed_total_ticks = get_ticks();
   } else if (dest == &blocked) {
     t->state = ST_BLOCKED;
     list_add_tail(&t->blocked_queue_anchor, dest);

@@ -1,6 +1,5 @@
 #ifndef STATS_H
 #define STATS_H
-
 /* Structure used by 'get_stats' function */
 struct stats {
   unsigned long user_ticks;
