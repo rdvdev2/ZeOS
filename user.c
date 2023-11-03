@@ -30,6 +30,10 @@ int __attribute__((__section__(".text.main"))) main(void) {
 
   if (fork_ret < 0)
     perror();
+  else if (fork_ret == 0) {
+    char fork_msg[] = "\n\nI'm a FORK! ===E\n\n";
+    write(1, fork_msg, strlen(fork_msg));
+  }
 
   int pid = getpid();
   char pid_buff[5] = "";
