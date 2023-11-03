@@ -3,13 +3,13 @@
  */
 
 #include <devices.h>
-#include <utils.h>
 #include <io.h>
 #include <list.h>
 #include <mm.h>
 #include <msrs.h>
 #include <sched.h>
 #include <stack.h>
+#include <utils.h>
 
 union task_union task[NR_TASKS] __attribute__((__section__(".data.task")));
 
@@ -111,7 +111,7 @@ void init_task1(void) {
   pcb->task.state =
       ST_RUN; // The init task is invoked by the OS after initialization
   current_task_remaining_quantum = 10;
-  
+
   set_stats(&pcb->task);
 }
 
@@ -181,7 +181,8 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
   }
 
   if (dest == NULL) {
-    if(t->state == ST_READY) t->st.total_trans++; 
+    if (t->state == ST_READY)
+      t->st.total_trans++;
     t->state = ST_RUN;
     // There is no queue
   } else if (dest == &ready_queue) {
@@ -196,9 +197,14 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
 }
 
 void sched_next_rr() {
-  struct list_head *next_head = list_first(&ready_queue);
-  union task_union *next =
-      list_entry(next_head, union task_union, task.ready_queue_anchor);
+  union task_union *next = NULL;
+
+  if (!list_empty(&ready_queue)) {
+    struct list_head *next_head = list_first(&ready_queue);
+    next = list_entry(next_head, union task_union, task.ready_queue_anchor);
+  } else {
+    next = (union task_union *)idle_task;
+  }
 
   update_process_state_rr(&next->task, NULL);
   current_task_remaining_quantum = get_quantum(&next->task);

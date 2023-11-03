@@ -221,6 +221,7 @@ void clear_user_space(struct task_struct *task) {
   page_table_entry *process_PT = get_PT(task);
   
   for (pag = 0; pag < NUM_PAG_DATA + NUM_PAG_CODE; ++pag) {
+    if (!process_PT[PAG_LOG_INIT_DATA + pag].bits.present) continue;
     free_frame(process_PT[PAG_LOG_INIT_DATA + pag].bits.pbase_addr);
     process_PT[PAG_LOG_INIT_DATA + pag].entry = 0;
   }
