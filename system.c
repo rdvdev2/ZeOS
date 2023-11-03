@@ -7,6 +7,7 @@
 #include <interrupt.h>
 #include <io.h>
 #include <mm.h>
+#include <random.h>
 #include <sched.h>
 #include <segment.h>
 #include <system.h>
@@ -99,6 +100,11 @@ int __attribute__((__section__(".text.main"))) main(void) {
   printk("Entering user mode...\n");
 
   enable_int();
+
+  // In real hardware it's improbable that initialization always takes the same
+  // ammount of time, with an emulator such as bochs this always returns the
+  // same seed (as long as the initialization code hasn't changed)
+  srand(get_ticks());
 
   /*
    * We return from a 'theorical' call to a 'call gate' to reduce our privileges
