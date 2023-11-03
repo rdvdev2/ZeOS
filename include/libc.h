@@ -28,4 +28,6 @@ void exit();
 
 void perror();
 
+int get_stats(int pid, struct stats *st);
+
 #endif /* __LIBC_H__ */

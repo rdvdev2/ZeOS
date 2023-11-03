@@ -98,12 +98,12 @@ void sys_exit() {
   struct task_struct *process = current();
 
   clear_user_space(process);
-  list_add(&(process->free_queue_anchor), &free_queue); 
+  list_add(&(process->free_queue_anchor), &free_queue);
   sched_next_rr();
 }
 
 int sys_write(int fd, char *buffer, int size) {
-  
+
   int check_fd_result = check_fd(fd, ESCRIPTURA);
   if (check_fd_result != 0) {
     return check_fd_result;
@@ -155,4 +155,23 @@ int sys_write(int fd, char *buffer, int size) {
 
 int sys_gettime() { return zeos_ticks; }
 
-int sys_get_stats() { return 0;}
+int sys_get_stats(int pid, struct stats *st) {
+  struct stats *st_kernel = NULL;
+
+  for (int i = 0; i < NR_TASKS; ++i) {
+    if (task[i].task.free_queue_anchor.next == NULL &&
+        task[i].task.PID == pid) {
+      st_kernel = &task[i].task.st;
+      break;
+    }
+  }
+
+  if (st_kernel == NULL)
+    return -3; // ESRCH
+
+  if (copy_to_user(st_kernel, st, sizeof(struct stats)) != 0) {
+    return -14; // EFAULT
+  } else {
+    return 0;
+  }
+}
