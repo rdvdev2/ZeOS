@@ -80,9 +80,6 @@ ENTRY(exit)
 	
 	CALL_OS(1)
 
-	pop %ebp
-	ret
-
 ENTRY(get_stats)
 	pushl %ebp
 	movl %esp, %ebp
