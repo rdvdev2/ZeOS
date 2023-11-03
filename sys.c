@@ -94,7 +94,13 @@ int sys_fork() {
   return new->task.PID;
 }
 
-void sys_exit() {}
+void sys_exit() {
+  struct task_struct *process = current();
+
+  clear_user_space(process);
+  list_add(&(process->free_queue_anchor), &free_queue); 
+  sched_next_rr();
+}
 
 int sys_write(int fd, char *buffer, int size) {
   int check_fd_result = check_fd(fd, ESCRIPTURA);

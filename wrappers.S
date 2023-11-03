@@ -73,3 +73,12 @@ ENTRY(fork)
 
 	pop %ebp
 	ret
+
+ENTRY(exit)
+	pushl %ebp
+	movl %esp, %ebp
+	
+	CALL_OS(1)
+
+	pop %ebp
+	ret

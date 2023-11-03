@@ -216,6 +216,16 @@ void free_user_pages(struct task_struct *task) {
   }
 }
 
+void clear_user_space(struct task_struct *task) {
+  int pag;
+  page_table_entry *process_PT = get_PT(task);
+  
+  for (pag = 0; pag < NUM_PAG_DATA + NUM_PAG_CODE; ++pag) {
+    free_frame(process_PT[PAG_LOG_INIT_DATA + pag].bits.pbase_addr);
+    process_PT[PAG_LOG_INIT_DATA + pag].entry = 0;
+  }
+}
+
 /* free_frame - Mark as FREE_FRAME the frame  'frame'.*/
 void free_frame(unsigned int frame) {
   if ((frame > NUM_PAG_KERNEL) && (frame < TOTAL_PAGES))
