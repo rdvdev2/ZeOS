@@ -143,7 +143,9 @@ int sys_write(int fd, char *buffer, int size) {
       buff_size = remaining;
 
     char sys_buffer[buff_size];
-    copy_from_user(&buffer[size - remaining], sys_buffer, buff_size);
+    if (copy_from_user(&buffer[size - remaining], sys_buffer, buff_size) != 0) {
+      return -14; // EFAULT
+    }
     int written = write_function(sys_buffer, buff_size);
 
     if (written <= 0)
@@ -160,7 +162,7 @@ int sys_write(int fd, char *buffer, int size) {
 int sys_gettime() { return zeos_ticks; }
 
 int sys_get_stats(int pid, struct stats *st) {
-  struct task_struct * task = get_task_with_pid(pid);
+  struct task_struct *task = get_task_with_pid(pid);
 
   if (task == NULL)
     return -3; // ESRCH
