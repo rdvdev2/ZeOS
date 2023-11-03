@@ -59,7 +59,7 @@ void cpu_idle(void) {
   }
 }
 
-void set_stats(struct task_struct *process) {
+void set_initial_stats(struct task_struct *process) {
   process->st.user_ticks = 0;
   process->st.system_ticks = 0;
   process->st.blocked_ticks = 0;
@@ -88,7 +88,7 @@ void init_idle(void) {
   // task available
 
   idle_task = &pcb->task;
-  set_stats(idle_task);
+  set_initial_stats(idle_task);
 }
 
 void init_task1(void) {
@@ -112,7 +112,7 @@ void init_task1(void) {
       ST_RUN; // The init task is invoked by the OS after initialization
   current_task_remaining_quantum = 10;
 
-  set_stats(&pcb->task);
+  set_initial_stats(&pcb->task);
 }
 
 void init_sched() {
@@ -150,6 +150,7 @@ void update_sched_data_rr() {
 
   current_task_remaining_quantum -= elapsed_ticks;
   current()->st.remaining_ticks = current_task_remaining_quantum;
+
   if (current_task_remaining_quantum < 0)
     current_task_remaining_quantum = 0;
 
@@ -170,26 +171,18 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
     break;
   case ST_READY:
     list_del(&t->ready_queue_anchor);
-    t->st.ready_ticks += get_ticks() - t->st.elapsed_total_ticks;
-    t->st.elapsed_total_ticks = get_ticks();
     break;
   case ST_BLOCKED:
     list_del(&t->blocked_queue_anchor);
-    t->st.blocked_ticks += get_ticks() - t->st.elapsed_total_ticks;
-    t->st.elapsed_total_ticks = get_ticks();
     break;
   }
 
   if (dest == NULL) {
-    if (t->state == ST_READY)
-      t->st.total_trans++;
     t->state = ST_RUN;
     // There is no queue
   } else if (dest == &ready_queue) {
     t->state = ST_READY;
     list_add_tail(&t->ready_queue_anchor, dest);
-    t->st.system_ticks += get_ticks() - t->st.elapsed_total_ticks;
-    t->st.elapsed_total_ticks = get_ticks();
   } else if (dest == &blocked) {
     t->state = ST_BLOCKED;
     list_add_tail(&t->blocked_queue_anchor, dest);
@@ -207,8 +200,13 @@ void sched_next_rr() {
   }
 
   update_process_state_rr(&next->task, NULL);
+
   current_task_remaining_quantum = get_quantum(&next->task);
+  current()->st.remaining_ticks = current_task_remaining_quantum;
+
+  stats_system_to_ready();
   task_switch(next);
+  stats_ready_to_system();
 }
 
 int get_quantum(struct task_struct *t) { return t->quantum; }

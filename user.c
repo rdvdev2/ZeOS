@@ -1,4 +1,5 @@
 #include <libc.h>
+#include <stats.h>
 
 char buff[24];
 
@@ -48,6 +49,25 @@ int __attribute__((__section__(".text.main"))) main(void) {
       strcat(ticks_buff2, pid_buff);
       strcat(ticks_buff2, ") +300 ticks!\n");
       write(1, ticks_buff2, sizeof(ticks_buff2));
+
+      struct stats my_stats = {};
+      if (get_stats(pid, &my_stats) < 0) {
+        perror();
+        continue;
+      }
+
+      char stats_buff[100] = "(";
+      strcat(stats_buff, pid_buff);
+      strcat(stats_buff, ") USR: ");
+      itoa(my_stats.user_ticks, &stats_buff[strlen(stats_buff)], 10);
+      strcat(stats_buff, "; SYS: ");
+      itoa(my_stats.system_ticks, &stats_buff[strlen(stats_buff)], 10);
+      strcat(stats_buff, "; RDY: ");
+      itoa(my_stats.ready_ticks, &stats_buff[strlen(stats_buff)], 10);
+      strcat(stats_buff, "; TRS: ");
+      itoa(my_stats.total_trans, &stats_buff[strlen(stats_buff)], 10);
+      strcat(stats_buff, "\n");
+      write(1, stats_buff, strlen(stats_buff));
     }
   }
 }

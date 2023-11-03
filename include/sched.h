@@ -7,8 +7,8 @@
 
 #include <list.h>
 #include <mm_address.h>
-#include <types.h>
 #include <stats.h>
+#include <types.h>
 
 #define NR_TASKS 10
 #define KERNEL_STACK_SIZE 1024
@@ -42,7 +42,7 @@ extern struct list_head ready_queue;
 
 #define INITIAL_ESP KERNEL_ESP(&task[1])
 
-void set_stats(struct task_struct *process);
+void set_initial_stats(struct task_struct *process);
 
 /* Inicialitza les dades del proces inicial */
 void init_task1(void);

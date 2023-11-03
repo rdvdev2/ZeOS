@@ -12,3 +12,8 @@ struct stats {
   unsigned long remaining_ticks;
 };
 #endif /* !STATS_H */
+
+void stats_user_to_system();
+void stats_system_to_user();
+void stats_system_to_ready();
+void stats_ready_to_system();

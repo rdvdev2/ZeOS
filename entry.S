@@ -85,14 +85,18 @@ ENTRY(page_fault_handler_student)
 ENTRY(keyboard_handler)
 	SAVE_ALL
 	EOI
+	call stats_user_to_system
 	call keyboard_routine
+	call stats_system_to_user
 	RESTORE_ALL
 	iret
 
 ENTRY(clock_handler)
 	SAVE_ALL
 	EOI
+	call stats_user_to_system
 	call clock_routine
+	call stats_system_to_user
 	RESTORE_ALL
 	iret
 
@@ -101,6 +105,8 @@ ENTRY(clock_handler)
 
 ENTRY (system_call_handler)
         SAVE_ALL
+	call stats_user_to_system
+	movl 0x18(%esp), %eax
         cmpl $0, %eax
         jl err
         cmpl $MAX_SYSCALL, %eax
@@ -111,6 +117,7 @@ err:
         movl $-38, %eax // ENOSYS
 fin:
         movl %eax, 0x18(%esp)
+	call stats_system_to_user
         RESTORE_ALL
         iret
 
@@ -121,6 +128,8 @@ ENTRY(system_call_handler_sysenter)
 	pushl $__USER_CS
 	push 4(%ebp)
 	SAVE_ALL
+	call stats_user_to_system
+	movl 0x18(%esp), %eax
 	cmpl $0, %eax
 	jl sysenter_err
 	cmpl $MAX_SYSCALL, %eax
@@ -131,6 +140,7 @@ sysenter_err:
 	movl $-38, %eax // ENOSYS
 sysenter_fin:
 	movl %eax, 0x18(%esp)
+	call stats_system_to_user
 	RESTORE_ALL
 	movl (%esp), %edx
 	movl 12(%esp), %ecx

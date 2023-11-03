@@ -48,6 +48,7 @@ SYSOBJ = \
 	task_switch.o \
 	stack.o \
 	random.o \
+	stats.o \
 
 LIBZEOS = -L . -l zeos
 
