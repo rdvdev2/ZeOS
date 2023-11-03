@@ -222,3 +222,14 @@ void schedule() {
     sched_next_rr();
   }
 }
+
+struct task_struct *get_task_with_pid(int pid) {
+  for (int i = 0; i < NR_TASKS; ++i) {
+    if (task[i].task.free_queue_anchor.next == NULL &&
+        task[i].task.PID == pid) {
+      return &task[i].task;
+    }
+  }
+
+  return NULL;
+}
