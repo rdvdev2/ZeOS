@@ -76,4 +76,6 @@ void schedule();
 
 int ret_from_fork();
 
+struct task_struct *get_task_with_pid(int pid);
+
 #endif /* __SCHED_H__ */

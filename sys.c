@@ -82,7 +82,11 @@ int sys_fork() {
   del_ss_pag(parent_PT, temp_page);
   set_cr3(current()->dir_pages_baseAddr);
 
-  new->task.PID = rand();
+  int pid;
+  do {
+    pid = rand();
+  } while (get_task_with_pid(pid) != NULL);
+  new->task.PID = pid;
 
   new->stack[KERNEL_STACK_SIZE - 19] = (unsigned long)ret_from_fork;
   new->stack[KERNEL_STACK_SIZE - 20] =
@@ -156,20 +160,12 @@ int sys_write(int fd, char *buffer, int size) {
 int sys_gettime() { return zeos_ticks; }
 
 int sys_get_stats(int pid, struct stats *st) {
-  struct stats *st_kernel = NULL;
+  struct task_struct * task = get_task_with_pid(pid);
 
-  for (int i = 0; i < NR_TASKS; ++i) {
-    if (task[i].task.free_queue_anchor.next == NULL &&
-        task[i].task.PID == pid) {
-      st_kernel = &task[i].task.st;
-      break;
-    }
-  }
-
-  if (st_kernel == NULL)
+  if (task == NULL)
     return -3; // ESRCH
 
-  if (copy_to_user(st_kernel, st, sizeof(struct stats)) != 0) {
+  if (copy_to_user(&task->st, st, sizeof(struct stats)) != 0) {
     return -14; // EFAULT
   } else {
     return 0;
