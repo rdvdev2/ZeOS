@@ -1,0 +1,59 @@
+[tools]
+as86 = "as86 -0 -a"
+ld86 = "ld86 -0"
+host_cc = "gcc"
+cc = "gcc"
+as = "as --32"
+ld = "ld"
+objcopy = "objcopy -O binary -R .note -R .comment -S"
+cpp = "cpp"
+
+[flags]
+host_c = "-Wall -Werror -Wstrict-prototypes -g"
+c = "-m32 -O2 -g -fno-omit-frame-pointer -ffreestanding -Wall -Werror -Iinclude -fno-PIC"
+as = "-Iinclude"
+ld = "-g -melf_i386"
+libzeos = "-L . -l zeos"
+
+[sources]
+build = [
+	"build.c",
+]
+bootsect = [
+	"bootsect.S",
+]
+system = [
+	"devices.c",
+	"entry.S",
+	"hardware.c",
+	"interrupt.c",
+	"io.c",
+	"klibc.c",
+	"list.c",
+	"mm.c",
+	"msrs.S",
+	"random.c",
+	"sched.c",
+	"stack.S",
+	"stats.c",
+	"sys.c",
+	"sys_call_table.S",
+	"system.c",
+	"task_switch.S",
+	"utils.c",
+]
+user = [
+	"errors.c",
+	"libc.c",
+	"user.c",
+	"wrappers.S",
+]
+
+[ld_scripts]
+system = "system.lds"
+user = "user.lds"
+
+[libraries]
+system = [
+	'zeos'
+]
