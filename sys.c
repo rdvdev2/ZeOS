@@ -31,7 +31,7 @@ int sys_fork() {
   struct list_head *new_entry = list_first(&free_queue);
   list_del(new_entry);
   union task_union *new =
-      list_entry(new_entry, union task_union, task.free_queue_anchor);
+      list_entry(new_entry, union task_union, task.queue_anchor);
 
   copy_data(current(), new, sizeof(union task_union));
 
@@ -102,7 +102,7 @@ void sys_exit() {
   struct task_struct *process = current();
 
   clear_user_space(process);
-  list_add(&(process->free_queue_anchor), &free_queue);
+  list_add(&(process->queue_anchor), &free_queue);
   sched_next_rr();
 }
 
