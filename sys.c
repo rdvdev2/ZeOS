@@ -1,7 +1,7 @@
 /*
  * sys.c - Syscalls implementation
  */
-#include "types.h"
+#include <block.h>
 #include <devices.h>
 #include <errno.h>
 #include <io.h>
@@ -10,6 +10,7 @@
 #include <mm_address.h>
 #include <random.h>
 #include <sched.h>
+#include <types.h>
 #include <utils.h>
 
 #define LECTURA 0
@@ -100,6 +101,19 @@ void sys_exit() {
   list_add(&(process->queue_anchor), &free_queue);
 
   sched_next_rr();
+}
+
+int sys_waitkey(char *buffer, int timeout) {
+  if (buffer == (char *)0 || !access_ok(VERIFY_WRITE, buffer, 1)) {
+    return -14; // EFAULT
+  }
+
+  current()->blocked.reason = BR_KEYBOARD;
+  block();
+
+  *buffer = keyboard_buffer;
+
+  return 0;
 }
 
 int sys_write(int fd, char *buffer, int size) {

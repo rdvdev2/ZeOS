@@ -27,7 +27,7 @@ struct task_struct *list_head_to_task_struct(struct list_head *l)
 }
 #endif
 
-extern struct list_head blocked;
+extern struct list_head keyboard_blocked;
 
 int current_task_remaining_quantum;
 
@@ -123,7 +123,7 @@ void init_task1(void) {
 void init_sched() {
   INIT_LIST_HEAD(&free_queue);
   INIT_LIST_HEAD(&ready_queue);
-  INIT_LIST_HEAD(&blocked);
+  INIT_LIST_HEAD(&keyboard_blocked);
 
   for (int i = 0; i < NR_TASKS; ++i) {
     task[i].task.PID = -1;
@@ -182,7 +182,7 @@ int needs_sched_rr() {
 }
 
 void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
-  if (current() == idle_task)
+  if (t == idle_task)
     return;
 
   if (t->state != ST_RUN)
@@ -196,7 +196,7 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
 
     if (dest == &ready_queue)
       t->state = ST_READY;
-    else if (dest == &blocked)
+    else // Any other queue is a blocked queue
       t->state = ST_BLOCKED;
   }
 }

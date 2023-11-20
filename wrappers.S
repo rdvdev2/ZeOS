@@ -29,6 +29,18 @@ ret_##SC_NUM: \
 	movl $-1, %eax; \
 exit_##SC_NUM:
 
+ENTRY(waitKey)
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl  8(%ebp), %edx
+	movl 12(%ebp), %ecx
+	CALL_OS(3)
+	HANDLE_ERRORS(3)
+
+	popl %ebp
+	ret
+
 ENTRY(write)
 	pushl %ebp
 	movl %esp, %ebp

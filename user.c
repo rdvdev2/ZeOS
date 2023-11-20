@@ -15,12 +15,29 @@ void bucle_infinito(void* n) {
   exit();
 }
 
+void echo() {
+  char buff = '\0';
+  for (;;) {
+    waitKey(&buff, 0);
+    write(1, &buff, 1);
+  }
+}
+
 int __attribute__((__section__(".text.main"))) main(void) {
   /* Next line, tries to move value 0 to CR3 register. This register is a
    * privileged one, and so it will raise an exception */
   /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */
 
   write(1, "Hello, ZeOS!\n", 14);
+
+  switch (fork()) {
+  case 0:
+    echo();
+    break;
+  case -1:
+    perror();
+    break;
+  }
 
   int ticks = gettime();
   char ticks_buff[40] = "";

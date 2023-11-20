@@ -5,7 +5,9 @@
 unsigned int zeos_ticks;
 
 // Queue for blocked processes in I/O
-struct list_head blocked;
+struct list_head keyboard_blocked;
+
+char keyboard_buffer = '\0';
 
 int sys_write_console(char *buffer, int size) {
   int i;

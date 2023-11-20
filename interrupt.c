@@ -114,6 +114,10 @@ void keyboard_routine() {
     if (c == '\0')
       c = 'C';
     printc_xy(0, 0, c);
+
+    keyboard_buffer = c;
+    struct list_head *e, *tmp;
+    list_for_each_safe(e, tmp, &keyboard_blocked) { unblock(e); }
   }
 }
 
