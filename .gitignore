@@ -12,3 +12,4 @@ bochsout.txt
 
 compile_commands.json
 .cache/
+.direnv
