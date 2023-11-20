@@ -121,6 +121,7 @@ void init_sched() {
   INIT_LIST_HEAD(&blocked);
 
   for (int i = 0; i < NR_TASKS; ++i) {
+    task[i].task.PID = -1;
     list_add(&task[i].task.queue_anchor, &free_queue);
   }
 }
@@ -217,7 +218,7 @@ void schedule() {
 
 struct task_struct *get_task_with_pid(int pid) {
   for (int i = 0; i < NR_TASKS; ++i) {
-    if (task[i].task.queue_anchor.next == NULL && task[i].task.PID == pid) {
+    if (task[i].task.PID == pid) {
       return &task[i].task;
     }
   }
