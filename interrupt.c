@@ -1,6 +1,7 @@
 /*
  * interrupt.c -
  */
+#include "block.h"
 #include <devices.h>
 #include <entry.h>
 #include <hardware.h>
@@ -116,8 +117,10 @@ void keyboard_routine() {
     printc_xy(0, 0, c);
 
     keyboard_buffer = c;
-    struct list_head *e, *tmp;
-    list_for_each_safe(e, tmp, &keyboard_blocked) { unblock(e); }
+    if (!list_empty(&keyboard_blocked)) {
+      struct list_head *first = list_first(&keyboard_blocked);
+      unblock(first);
+    }
   }
 }
 
