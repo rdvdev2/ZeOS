@@ -19,9 +19,7 @@ struct task_struct {
   int PID; /* Process ID. This MUST be the first field of the struct. */
   page_table_entry *dir_pages_baseAddr;
   unsigned long esp;
-  struct list_head free_queue_anchor;
-  struct list_head ready_queue_anchor;
-  struct list_head blocked_queue_anchor;
+  struct list_head queue_anchor;
   enum state_t state;
   struct stats st;
   int quantum;

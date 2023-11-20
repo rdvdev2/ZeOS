@@ -73,7 +73,7 @@ void init_idle(void) {
   struct list_head *pcb_entry = list_first(&free_queue);
   list_del(pcb_entry);
   union task_union *pcb =
-      list_entry(pcb_entry, union task_union, task.free_queue_anchor);
+      list_entry(pcb_entry, union task_union, task.queue_anchor);
 
   pcb->task.PID = 0;
 
@@ -95,7 +95,7 @@ void init_task1(void) {
   struct list_head *pcb_entry = list_first(&free_queue);
   list_del(pcb_entry);
   union task_union *pcb =
-      list_entry(pcb_entry, union task_union, task.free_queue_anchor);
+      list_entry(pcb_entry, union task_union, task.queue_anchor);
 
   pcb->task.PID = 1;
 
@@ -121,7 +121,8 @@ void init_sched() {
   INIT_LIST_HEAD(&blocked);
 
   for (int i = 0; i < NR_TASKS; ++i) {
-    list_add(&task[i].task.free_queue_anchor, &free_queue);
+    task[i].task.PID = -1;
+    list_add(&task[i].task.queue_anchor, &free_queue);
   }
 }
 
@@ -165,27 +166,19 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
   if (current() == idle_task)
     return;
 
-  switch (t->state) {
-  case ST_RUN:
-    // There is no queue
-    break;
-  case ST_READY:
-    list_del(&t->ready_queue_anchor);
-    break;
-  case ST_BLOCKED:
-    list_del(&t->blocked_queue_anchor);
-    break;
-  }
+  if (t->state != ST_RUN)
+    list_del(&t->queue_anchor);
 
   if (dest == NULL) {
     t->state = ST_RUN;
     // There is no queue
-  } else if (dest == &ready_queue) {
-    t->state = ST_READY;
-    list_add_tail(&t->ready_queue_anchor, dest);
-  } else if (dest == &blocked) {
-    t->state = ST_BLOCKED;
-    list_add_tail(&t->blocked_queue_anchor, dest);
+  } else {
+    list_add_tail(&t->queue_anchor, dest);
+
+    if (dest == &ready_queue)
+      t->state = ST_READY;
+    else if (dest == &blocked)
+      t->state = ST_BLOCKED;
   }
 }
 
@@ -194,7 +187,7 @@ void sched_next_rr() {
 
   if (!list_empty(&ready_queue)) {
     struct list_head *next_head = list_first(&ready_queue);
-    next = list_entry(next_head, union task_union, task.ready_queue_anchor);
+    next = list_entry(next_head, union task_union, task.queue_anchor);
   } else {
     next = (union task_union *)idle_task;
   }
@@ -225,8 +218,7 @@ void schedule() {
 
 struct task_struct *get_task_with_pid(int pid) {
   for (int i = 0; i < NR_TASKS; ++i) {
-    if (task[i].task.free_queue_anchor.next == NULL &&
-        task[i].task.PID == pid) {
+    if (task[i].task.PID == pid) {
       return &task[i].task;
     }
   }

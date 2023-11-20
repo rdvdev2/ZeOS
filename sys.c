@@ -1,6 +1,7 @@
 /*
  * sys.c - Syscalls implementation
  */
+#include "types.h"
 #include <devices.h>
 #include <io.h>
 #include <list.h>
@@ -31,7 +32,7 @@ int sys_fork() {
   struct list_head *new_entry = list_first(&free_queue);
   list_del(new_entry);
   union task_union *new =
-      list_entry(new_entry, union task_union, task.free_queue_anchor);
+      list_entry(new_entry, union task_union, task.queue_anchor);
 
   copy_data(current(), new, sizeof(union task_union));
 
@@ -85,7 +86,7 @@ int sys_fork() {
   int pid;
   do {
     pid = rand();
-  } while (get_task_with_pid(pid) != NULL);
+  } while (pid != -1 && get_task_with_pid(pid) != NULL);
   new->task.PID = pid;
 
   new->stack[KERNEL_STACK_SIZE - 19] = (unsigned long)ret_from_fork;
@@ -102,7 +103,8 @@ void sys_exit() {
   struct task_struct *process = current();
 
   clear_user_space(process);
-  list_add(&(process->free_queue_anchor), &free_queue);
+  process->PID = -1;
+  list_add(&(process->queue_anchor), &free_queue);
   sched_next_rr();
 }
 
