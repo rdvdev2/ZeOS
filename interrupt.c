@@ -128,5 +128,13 @@ void clock_routine() {
   zeos_show_clock();
   ++zeos_ticks;
 
+  struct list_head *e, *tmp;
+  list_for_each_safe(e, tmp, &keyboard_blocked) {
+    struct task_struct *task = list_entry(e, struct task_struct, queue_anchor);
+    if (--(task->blocked.blocked.keyboard.remaining_ticks) == 0) {
+      unblock(e);
+    }
+  }
+
   schedule();
 }

@@ -104,16 +104,20 @@ void sys_exit() {
 }
 
 int sys_waitkey(char *buffer, int timeout) {
-  if (buffer == (char *)0 || !access_ok(VERIFY_WRITE, buffer, 1)) {
+  if (!access_ok(VERIFY_WRITE, (void*) buffer, 1)) {
     return -14; // EFAULT
   }
 
-  current()->blocked.reason = BR_KEYBOARD;
-  block();
+  if (timeout <= 0)
+    return -22; // EINVAL
+    
 
-  *buffer = keyboard_buffer;
+  int error = sys_read_key(buffer, timeout);
 
-  return 0;
+  if (error < 0) 
+    return error;
+  else
+    return 0;
 }
 
 int sys_write(int fd, char *buffer, int size) {

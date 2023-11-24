@@ -1,15 +1,15 @@
 #ifndef BLOCK_H
 #define BLOCK_H
 
+#include "devices.h"
 #include <list.h>
 
 typedef enum {
-  BR_NONE,
   BR_KEYBOARD,
 } BlockReason;
 
 typedef union {
-  void *dummy;
+  KeyboardBlocked keyboard;
 } BlockedUnion;
 
 typedef struct {
@@ -17,7 +17,7 @@ typedef struct {
   BlockedUnion blocked;
 } BlockedTaggedUnion;
 
-int block();
+void block();
 int unblock(struct list_head *task_anchor);
 
 #endif
