@@ -43,7 +43,9 @@ int __attribute__((__section__(".text.main"))) main(void) {
   strcat(pid_msg_buff, pid_buff);
   strcat(pid_msg_buff, "\n\n");
   write(1, pid_msg_buff, strlen(pid_msg_buff));
-
+  
+  int bg = 0;
+  int fg = 0;
   int next = gettime() + 300;
   while (1) {
     if (gettime() > next) {
@@ -72,6 +74,14 @@ int __attribute__((__section__(".text.main"))) main(void) {
       itoa(my_stats.total_trans, &stats_buff[strlen(stats_buff)], 10);
       strcat(stats_buff, "\n");
       write(1, stats_buff, strlen(stats_buff));
+
+      ++bg;
+      ++fg;
+      char a = 'a';
+      char *null_char = ((void *) 0);
+      if (bg < 0xF && fg < 0xF)changeColor(fg,bg);
+      else if (bg == 20) clrscr(&a);
+      else if (bg == 30) clrscr(null_char);
     }
   }
 }

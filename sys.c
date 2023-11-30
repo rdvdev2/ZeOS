@@ -176,3 +176,34 @@ int sys_get_stats(int pid, struct stats *st) {
     return 0;
   }
 }
+
+int sys_gotoXY(int new_x, int new_y) {
+  if(new_x < 0 || new_x > NUM_COLUMNS) return -1;
+  if(new_y < 0 || new_y > NUM_ROWS) return -1;
+
+  x = new_x;
+  y = new_y;
+
+  return 0; 
+}
+
+int sys_changeColor(int fg, int bg) {
+  if(fg < 0 || fg > 0xF) return -1;
+  if(bg < 0 || bg > 0xF) return -1; 
+  
+  foreground = fg;
+  background = bg;
+  return 0;
+}
+
+int sys_clrscr(char* b) {
+  char print_char = ' ';
+  
+  if(b != ((void *) 0)) print_char = *b; 
+  for(Byte i = 0; i < NUM_COLUMNS; ++i) {
+    for (Byte j = 0; j < NUM_ROWS; ++j) {
+	printc_xy(i,j,print_char);
+    }
+  }
+  return 0;
+}
