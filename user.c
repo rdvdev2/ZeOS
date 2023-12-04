@@ -16,10 +16,10 @@ void bucle_infinito(void* n) {
 }
 
 void echo() {
-  char buff = '\0';
+  char * buff = "";
   for (;;) {
-    if (waitKey(&buff, 300) == 0)
-      write(1, &buff, 1);
+    if (waitKey(buff, 300) == 0)
+      write(1, buff, 1);
     else
       perror();
   }
