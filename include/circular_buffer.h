@@ -1,10 +1,10 @@
-#ifndef CIRCULAR_BUFFER_H__
-#define CIRCULAR_BUFFER_H__
+#ifndef CIRCULAR_BUFFER_H
+#define CIRCULAR_BUFFER_H
 
-const unsigned int BUFFER_SIZE = 32;
+#define CIRCULAR_BUFFER_SIZE 32
 
 typedef struct{
-  char content[BUFFER_SIZE];
+  char content[CIRCULAR_BUFFER_SIZE];
   int head;
   int tail;
 }circular_buff;
