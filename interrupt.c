@@ -1,7 +1,8 @@
 /*
  * interrupt.c -
  */
-#include "block.h"
+#include <block.h>
+#include <circular_buffer.h>
 #include <devices.h>
 #include <entry.h>
 #include <hardware.h>
@@ -116,7 +117,7 @@ void keyboard_routine() {
       c = 'C';
     printc_xy(0, 0, c);
 
-    keyboard_buffer = c;
+    add_item(&keyboard_buffer, c);
     if (!list_empty(&keyboard_blocked)) {
       struct list_head *first = list_first(&keyboard_blocked);
       unblock(first);

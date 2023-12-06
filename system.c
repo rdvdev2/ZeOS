@@ -2,6 +2,7 @@
  * system.c -
  */
 
+#include <circular_buffer.h>
 #include <devices.h>
 #include <hardware.h>
 #include <interrupt.h>
@@ -70,6 +71,8 @@ int __attribute__((__section__(".text.main"))) main(void) {
   /*** DO *NOT* ADD ANY CODE IN THIS ROUTINE BEFORE THIS POINT ***/
 
   printk("Kernel Loaded!    ");
+
+  init_buffer(&keyboard_buffer);
 
   /* Initialize hardware data */
   setGdt(); /* Definicio de la taula de segments de memoria */

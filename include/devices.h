@@ -2,10 +2,11 @@
 #define DEVICES_H__
 
 #include <list.h>
+#include <circular_buffer.h>
 
 extern unsigned int zeos_ticks;
 extern struct list_head keyboard_blocked;
-extern char keyboard_buffer;
+extern circular_buff keyboard_buffer;
 
 typedef struct {
   int remaining_ticks;
