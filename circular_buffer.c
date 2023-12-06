@@ -18,7 +18,7 @@ int add_item(circular_buff* buff, char item) {
 int remove_item(circular_buff* buff, char* item) {
   if(buff->tail == buff->head) return -1;
   
-  *item = buff->head;
-  buff->head++;
+  *item = buff[head];
+  if(++buff->head == BUFF_SIZE) buff->head = 0;
   return 0;
 }
