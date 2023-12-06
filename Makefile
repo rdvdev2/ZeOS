@@ -49,6 +49,7 @@ SYSOBJ = \
 	stack.o \
 	random.o \
 	stats.o \
+	circular_buffer.o \
 
 LIBZEOS = -L . -l zeos
 
