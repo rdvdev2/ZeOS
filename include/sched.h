@@ -23,6 +23,8 @@ struct task_struct {
   enum state_t state;
   struct stats st;
   int quantum;
+  struct list_head thread_anchor;
+  int TID; // Thread ID
 };
 
 union task_union {

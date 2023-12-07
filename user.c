@@ -5,6 +5,12 @@ char buff[24];
 
 int pid;
 
+void bucle_infinito(void* n) {
+  write(1, "Hola, soy el nuevo thread!\n", 27);
+  while(1) {
+  } 
+}
+
 int __attribute__((__section__(".text.main"))) main(void) {
   /* Next line, tries to move value 0 to CR3 register. This register is a
    * privileged one, and so it will raise an exception */
@@ -47,6 +53,9 @@ int __attribute__((__section__(".text.main"))) main(void) {
  int bg = 0;
  int fg = 0;
   int next = gettime() + 300;
+  
+  int random_number = 5;
+  if (fork_ret > 0)threadCreateWithStack(bucle_infinito, 3, (void *)&random_number);
   while (1) {
     if (gettime() > next) {
       

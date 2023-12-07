@@ -208,3 +208,94 @@ int sys_clrscr(char* b) {
   }
   return 0;
 }
+
+int sys_create_thread_stack(void (*function)(void* arg), int N, void* parameter) {
+  if(list_empty(&free_queue))
+    return -11;
+ 
+  struct list_head *new_entry = list_first(&free_queue);
+  list_del(new_entry);
+  
+  union task_union *new = list_entry(new_entry, union task_union, task.queue_anchor);
+  
+  //We assing N pages for the user stack and one more for the Thread Local Storage 
+  int stack_physical_frames[N];
+  int TLS_physical_frame = 0; 
+
+  for (int i = 0; i < N+1; ++i) {
+    if(i < N) {
+      stack_physical_frames[i] = alloc_frame();
+      if(stack_physical_frames[i] == -1) {
+        for (int j = 0; j < i; ++j)
+          free_frame(stack_physical_frames[j]); 
+        return -12; 
+      }
+    }
+    else {
+      TLS_physical_frame = alloc_frame();
+      if(TLS_physical_frame == -1) {
+        free_frame(TLS_physical_frame);
+	for(int j = 0; j < N; ++j) 
+	  free_frame(stack_physical_frames[j]);
+        return -12;
+      }
+    }	
+  } 
+
+  page_table_entry *PT = get_PT(current());
+  int consecutive_free_pages = 0;
+  int is_TLS_allocated = 0;
+  int is_stack_allocated = 0;
+  int first_stack_page = 0;
+
+  for(int i = NUM_PAG_KERNEL; i < TOTAL_PAGES; ++i) {
+    if(PT[i].bits.present) {
+      consecutive_free_pages = 0;
+      continue; 
+    }
+
+    ++consecutive_free_pages;
+
+    if(consecutive_free_pages == N && !is_stack_allocated) {
+      first_stack_page = i - N + 1;
+      for(int j = first_stack_page; j <= i; ++j) {
+        set_ss_pag(PT,j,stack_physical_frames[j - first_stack_page]);
+      }
+      is_stack_allocated = 1;
+      consecutive_free_pages = 0;
+    }
+    else if(is_stack_allocated || i == TOTAL_PAGES -1 || PT[i+1].bits.present) {
+      set_ss_pag(PT,i,TLS_physical_frame);
+      is_TLS_allocated = 1;
+      consecutive_free_pages = 0;
+    }
+    
+    if(is_stack_allocated && is_TLS_allocated) break; 
+  }
+  
+  set_cr3(get_DIR(current()));
+  copy_data(current(), new, sizeof(union task_union));
+  
+  list_add(&new->task.thread_anchor, &current()->thread_anchor);
+ /* 
+  int tid;
+  do {
+    tid = rand();
+  } while(tid != -1 && get_task_with_tid(tid) != NULL);
+  new->task.TID = tid;
+*/ 
+  new->task.TID = 1;
+  unsigned long *stack_bottom = (unsigned long *) ((N+1  + first_stack_page) * PAGE_SIZE - 4);
+  new->stack[KERNEL_STACK_SIZE - 3] = (unsigned long) stack_bottom - 2;
+  new->stack[KERNEL_STACK_SIZE - 6] = (unsigned long) function;
+//  new->stack[KERNEL_STACK_SIZE - 17] = (unsigned long) function;
+//  new->stack[KERNEL_STACK_SIZE - 18] = 0;
+//  *stack_bottom = (unsigned long) parameter;
+  copy_to_user(&parameter, stack_bottom, sizeof(unsigned long));
+  unsigned long number = 0;
+  copy_to_user(&number,stack_bottom-1,sizeof(unsigned long)); 
+  copy_to_user(&number,stack_bottom-2,sizeof(unsigned long)); 
+  update_process_state_rr(&new->task, &ready_queue);
+  new->task.esp = (unsigned long)&new->stack[KERNEL_STACK_SIZE - 18] - 4;
+  return 0;
+}
