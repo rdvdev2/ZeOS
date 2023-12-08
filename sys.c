@@ -28,14 +28,11 @@ int sys_ni_syscall() { return -ENOSYS; }
 int sys_getpid() { return current()->PID; }
 
 int sys_fork() {
-  if (list_empty(&free_queue))
-    return -EAGAIN;
-  struct list_head *new_entry = list_first(&free_queue);
-  list_del(new_entry);
-  union task_union *new =
-      list_entry(new_entry, union task_union, task.queue_anchor);
-
-  copy_data(current(), new, sizeof(union task_union));
+  union task_union * new = NULL;
+  int clone_ret;
+  if ((clone_ret = clone_current_task(&new)) != 0) {
+    return -clone_ret;
+  }
 
   allocate_DIR(&new->task);
 
@@ -54,14 +51,8 @@ int sys_fork() {
     return -ENOMEM;
 
   int phys_frames[user_page_nr];
-
-  for (int i = 0; i < user_page_nr; ++i) {
-    phys_frames[i] = alloc_frame();
-    if (phys_frames[i] == -1) {
-      for (int j = 0; j < i; ++j)
-        free_frame(phys_frames[j]);
-      return -ENOMEM;
-    }
+  if (alloc_frames(user_page_nr, phys_frames) == -1) {
+    return -ENOMEM;
   }
 
   page_table_entry *new_PT = get_PT(&new->task);
@@ -210,71 +201,24 @@ int sys_clrscr(char* b) {
 }
 
 int sys_create_thread_stack(void (*function)(void* arg), int N, void* parameter) {
-  if(list_empty(&free_queue))
-    return -11;
- 
-  struct list_head *new_entry = list_first(&free_queue);
-  list_del(new_entry);
-  
-  union task_union *new = list_entry(new_entry, union task_union, task.queue_anchor);
-  
-  //We assing N pages for the user stack and one more for the Thread Local Storage 
-  int stack_physical_frames[N];
-  int TLS_physical_frame = 0; 
+  union task_union * new = NULL;
+  int clone_ret;
+  if ((clone_ret = clone_current_task(&new)) != 0) {
+    return clone_ret;
+  }
 
-  for (int i = 0; i < N+1; ++i) {
-    if(i < N) {
-      stack_physical_frames[i] = alloc_frame();
-      if(stack_physical_frames[i] == -1) {
-        for (int j = 0; j < i; ++j)
-          free_frame(stack_physical_frames[j]); 
-        return -12; 
-      }
-    }
-    else {
-      TLS_physical_frame = alloc_frame();
-      if(TLS_physical_frame == -1) {
-        free_frame(TLS_physical_frame);
-	for(int j = 0; j < N; ++j) 
-	  free_frame(stack_physical_frames[j]);
-        return -12;
-      }
-    }	
-  } 
+  int phys_frames[N + 1];
+  if (alloc_frames(N + 1, phys_frames) == -1) {
+    return -12;
+  }
 
   page_table_entry *PT = get_PT(current());
-  int consecutive_free_pages = 0;
-  int is_TLS_allocated = 0;
-  int is_stack_allocated = 0;
-  int first_stack_page = 0;
-
-  for(int i = NUM_PAG_KERNEL; i < TOTAL_PAGES; ++i) {
-    if(PT[i].bits.present) {
-      consecutive_free_pages = 0;
-      continue; 
-    }
-
-    ++consecutive_free_pages;
-
-    if(consecutive_free_pages == N && !is_stack_allocated) {
-      first_stack_page = i - N + 1;
-      for(int j = first_stack_page; j <= i; ++j) {
-        set_ss_pag(PT,j,stack_physical_frames[j - first_stack_page]);
-      }
-      is_stack_allocated = 1;
-      consecutive_free_pages = 0;
-    }
-    else if(is_stack_allocated || i == TOTAL_PAGES -1 || PT[i+1].bits.present) {
-      set_ss_pag(PT,i,TLS_physical_frame);
-      is_TLS_allocated = 1;
-      consecutive_free_pages = 0;
-    }
-    
-    if(is_stack_allocated && is_TLS_allocated) break; 
-  }
+  int block_sizes[2] = { N, 1 };
+  int block_starts[2] = {};
+  allocate_user_pages(block_sizes, block_starts, 2, PT, phys_frames);
+  int first_stack_page = block_starts[0];
   
   set_cr3(get_DIR(current()));
-  copy_data(current(), new, sizeof(union task_union));
   
   list_add(&new->task.thread_anchor, &current()->thread_anchor);
  /* 

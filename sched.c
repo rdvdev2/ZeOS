@@ -127,6 +127,18 @@ void init_sched() {
   }
 }
 
+int clone_current_task(union task_union ** new) {
+  if (list_empty(&free_queue)) return -11;
+
+  struct list_head * new_entry = list_first(&free_queue);
+  list_del(new_entry);
+  *new = list_entry(new_entry, union task_union, task.queue_anchor);
+
+  copy_data(current(), *new, sizeof(union task_union));
+
+  return 0;
+}
+
 struct task_struct *current() {
   int ret_value;
 
