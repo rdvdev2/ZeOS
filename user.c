@@ -12,8 +12,7 @@ void bucle_infinito(void* n) {
   write(1, random_number_buff, strlen(random_number_buff));
 
   write(1, "Hola, soy el nuevo thread!\n", 27);
-  while(1) {
-  } 
+  exit();
 }
 
 int __attribute__((__section__(".text.main"))) main(void) {

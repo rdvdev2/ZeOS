@@ -90,9 +90,14 @@ int sys_fork() {
 void sys_exit() {
   struct task_struct *process = current();
 
-  clear_user_space(process);
+  if (list_empty(&process->thread_anchor))
+    clear_user_space(process);
+  list_del(&process->thread_anchor);
+
   process->PID = -1;
+  process->TID = -1;
   list_add(&(process->queue_anchor), &free_queue);
+
   sched_next_rr();
 }
 

@@ -126,6 +126,7 @@ void init_sched() {
 
   for (int i = 0; i < NR_TASKS; ++i) {
     task[i].task.PID = -1;
+    task[i].task.TID = -1;
     list_add(&task[i].task.queue_anchor, &free_queue);
   }
 }
