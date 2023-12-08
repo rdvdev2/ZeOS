@@ -6,6 +6,11 @@ char buff[24];
 int pid;
 
 void bucle_infinito(void* n) {
+  int random_number = *(int *) n;
+  char random_number_buff[10] = "";
+  itoa(random_number, random_number_buff, 10);
+  write(1, random_number_buff, strlen(random_number_buff));
+
   write(1, "Hola, soy el nuevo thread!\n", 27);
   while(1) {
   } 
