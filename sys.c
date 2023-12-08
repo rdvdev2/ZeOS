@@ -76,6 +76,7 @@ int sys_fork() {
   set_cr3(current()->dir_pages_baseAddr);
 
   new->task.PID = allocate_new_pid();
+  new->task.TID = allocate_new_tid();
 
   new->stack[KERNEL_STACK_SIZE - 19] = (unsigned long)ret_from_fork;
   new->stack[KERNEL_STACK_SIZE - 20] =
