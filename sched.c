@@ -7,6 +7,7 @@
 #include <list.h>
 #include <mm.h>
 #include <msrs.h>
+#include <random.h>
 #include <sched.h>
 #include <stack.h>
 #include <utils.h>
@@ -76,6 +77,7 @@ void init_idle(void) {
       list_entry(pcb_entry, union task_union, task.queue_anchor);
 
   pcb->task.PID = 0;
+  pcb->task.TID = 0;
 
   allocate_DIR(&pcb->task);
 
@@ -98,6 +100,7 @@ void init_task1(void) {
       list_entry(pcb_entry, union task_union, task.queue_anchor);
 
   pcb->task.PID = 1;
+  pcb->task.TID = 1;
 
   allocate_DIR(&pcb->task);
   set_user_pages(&pcb->task);
@@ -238,10 +241,33 @@ struct task_struct *get_task_with_pid(int pid) {
 
   return NULL;
 }
-/*
-struct task_struct *get_task_with_tid(int tid) {
-  
-  list_for_each(e, &current()->thread_anchor
 
+struct task_struct *get_task_with_tid(int tid) {
+  for (int i = 0; i < NR_TASKS; ++i) {
+    if (task[i].task.TID == tid) {
+      return &task[i].task;
+    }
+  }
+
+  return NULL;
 }
-*/
+
+int allocate_new_pid() {
+  int pid;
+
+  do {
+    pid = rand();
+  } while (pid == -1 || get_task_with_pid(pid) != NULL);
+
+  return pid;
+}
+
+int allocate_new_tid() {
+  int tid;
+
+  do {
+    tid = rand();
+  } while (tid == -1 || get_task_with_tid(tid) != NULL);
+
+  return tid;
+}

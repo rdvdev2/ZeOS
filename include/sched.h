@@ -79,5 +79,9 @@ void schedule();
 int ret_from_fork();
 
 struct task_struct *get_task_with_pid(int pid);
+struct task_struct *get_task_with_tid(int tid);
+
+int allocate_new_pid();
+int allocate_new_tid();
 
 #endif /* __SCHED_H__ */

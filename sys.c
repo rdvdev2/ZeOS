@@ -75,11 +75,7 @@ int sys_fork() {
   del_ss_pag(parent_PT, temp_page);
   set_cr3(current()->dir_pages_baseAddr);
 
-  int pid;
-  do {
-    pid = rand();
-  } while (pid != -1 && get_task_with_pid(pid) != NULL);
-  new->task.PID = pid;
+  new->task.PID = allocate_new_pid();
 
   new->stack[KERNEL_STACK_SIZE - 19] = (unsigned long)ret_from_fork;
   new->stack[KERNEL_STACK_SIZE - 20] =
@@ -221,14 +217,9 @@ int sys_create_thread_stack(void (*function)(void* arg), int N, void* parameter)
   set_cr3(get_DIR(current()));
   
   list_add(&new->task.thread_anchor, &current()->thread_anchor);
- /* 
-  int tid;
-  do {
-    tid = rand();
-  } while(tid != -1 && get_task_with_tid(tid) != NULL);
-  new->task.TID = tid;
-*/ 
-  new->task.TID = 1;
+
+  new->task.TID = allocate_new_tid();
+
   unsigned long *stack_bottom = (unsigned long *) ((N+1  + first_stack_page) * PAGE_SIZE - 4);
   new->stack[KERNEL_STACK_SIZE - 3] = (unsigned long) stack_bottom - 2;
   new->stack[KERNEL_STACK_SIZE - 6] = (unsigned long) function;
