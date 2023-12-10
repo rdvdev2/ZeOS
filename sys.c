@@ -3,6 +3,7 @@
  */
 #include "types.h"
 #include <devices.h>
+#include <errno.h>
 #include <io.h>
 #include <list.h>
 #include <mm.h>
@@ -16,19 +17,19 @@
 
 int check_fd(int fd, int permissions) {
   if (fd != 1)
-    return -9; /*EBADF*/
+    return -EBADF;
   if (permissions != ESCRIPTURA)
-    return -13; /*EACCES*/
+    return -EACCES;
   return 0;
 }
 
-int sys_ni_syscall() { return -38; /*ENOSYS*/ }
+int sys_ni_syscall() { return -ENOSYS; }
 
 int sys_getpid() { return current()->PID; }
 
 int sys_fork() {
   if (list_empty(&free_queue))
-    return -11;
+    return -EAGAIN;
   struct list_head *new_entry = list_first(&free_queue);
   list_del(new_entry);
   union task_union *new =
@@ -50,7 +51,7 @@ int sys_fork() {
   }
 
   if (temp_page < 0)
-    return -12;
+    return -ENOMEM;
 
   int phys_frames[user_page_nr];
 
@@ -59,7 +60,7 @@ int sys_fork() {
     if (phys_frames[i] == -1) {
       for (int j = 0; j < i; ++j)
         free_frame(phys_frames[j]);
-      return -12;
+      return -ENOMEM;
     }
   }
 
@@ -116,14 +117,14 @@ int sys_write(int fd, char *buffer, int size) {
   }
 
   if (buffer == (char *)0) {
-    return -14; // EFAULT
+    return -EFAULT;
   }
 
   if (size == 0)
     return 0;
 
   if (size < 0)
-    return -22; // EINVAL
+    return -EINVAL;
 
   int (*write_function)(char *, int);
   switch (fd) {
@@ -131,7 +132,7 @@ int sys_write(int fd, char *buffer, int size) {
     write_function = sys_write_console;
     break;
   default:
-    return -5; // EIO
+    return -EIO;
   }
 
   int remaining = size;
@@ -146,7 +147,7 @@ int sys_write(int fd, char *buffer, int size) {
 
     char sys_buffer[buff_size];
     if (copy_from_user(&buffer[size - remaining], sys_buffer, buff_size) != 0) {
-      return -14; // EFAULT
+      return -EFAULT;
     }
     int written = write_function(sys_buffer, buff_size);
 
@@ -167,10 +168,10 @@ int sys_get_stats(int pid, struct stats *st) {
   struct task_struct *task = get_task_with_pid(pid);
 
   if (task == NULL)
-    return -3; // ESRCH
+    return -ESRCH;
 
   if (copy_to_user(&task->st, st, sizeof(struct stats)) != 0) {
-    return -14; // EFAULT
+    return -EFAULT;
   } else {
     return 0;
   }
