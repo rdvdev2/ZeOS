@@ -11,8 +11,8 @@
 /**************/
 
 Byte x, y = 19;
-int foreground = 2;
-int background = 0xF;
+int foreground = 0x2;
+int background = 0x0;
 
 /* Read a byte from 'port' */
 Byte inb(unsigned short port) {
