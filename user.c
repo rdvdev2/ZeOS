@@ -15,12 +15,37 @@ void bucle_infinito(void* n) {
   exit();
 }
 
+void print_stats() {
+  int pid = getpid();
+  struct stats my_stats = {};
+  if (get_stats(pid, &my_stats) < 0) {
+    perror();
+    return;
+  }
+
+  char stats_buff[100] = "(";
+  itoa(pid, &stats_buff[strlen(stats_buff)], 10);
+  strcat(stats_buff, ") USR: ");
+  itoa(my_stats.user_ticks, &stats_buff[strlen(stats_buff)], 10);
+  strcat(stats_buff, "; SYS: ");
+  itoa(my_stats.system_ticks, &stats_buff[strlen(stats_buff)], 10);
+  strcat(stats_buff, "; RDY: ");
+  itoa(my_stats.ready_ticks, &stats_buff[strlen(stats_buff)], 10);
+  strcat(stats_buff, "; BLK: ");
+  itoa(my_stats.blocked_ticks, &stats_buff[strlen(stats_buff)], 10);
+  strcat(stats_buff, "; TRS: ");
+  itoa(my_stats.total_trans, &stats_buff[strlen(stats_buff)], 10);
+  strcat(stats_buff, "\n");
+  write(1, stats_buff, strlen(stats_buff));
+}
+
 void echo() {
-  char * buff = "";
+  char *buff = "";
   for (;;) {
-    if (waitKey(buff, 300) == 0)
+    if (waitKey(buff, 300) == 0) {
       write(1, buff, 1);
-    else
+      print_stats();
+    } else
       perror();
   }
 }
@@ -98,25 +123,7 @@ int __attribute__((__section__(".text.main"))) main(void) {
       strcat(ticks_buff2, ") +300 ticks!\n");
       write(1, ticks_buff2, sizeof(ticks_buff2));
 
-      struct stats my_stats = {};
-      if (get_stats(pid, &my_stats) < 0) {
-        perror();
-        continue;
-      }
-
-      char stats_buff[100] = "(";
-      strcat(stats_buff, pid_buff);
-      strcat(stats_buff, ") USR: ");
-      itoa(my_stats.user_ticks, &stats_buff[strlen(stats_buff)], 10);
-      strcat(stats_buff, "; SYS: ");
-      itoa(my_stats.system_ticks, &stats_buff[strlen(stats_buff)], 10);
-      strcat(stats_buff, "; RDY: ");
-      itoa(my_stats.ready_ticks, &stats_buff[strlen(stats_buff)], 10);
-      strcat(stats_buff, "; TRS: ");
-      itoa(my_stats.total_trans, &stats_buff[strlen(stats_buff)], 10);
-      strcat(stats_buff, "\n");
-      write(1, stats_buff, strlen(stats_buff));
-
+      print_stats();
     }
   }
 }

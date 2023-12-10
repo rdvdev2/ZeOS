@@ -2,6 +2,7 @@
  * sched.c - initializes struct for task 0 anda task 1
  */
 
+#include "stats.h"
 #include <devices.h>
 #include <errno.h>
 #include <io.h>
@@ -216,7 +217,13 @@ void sched_next_rr() {
   current_task_remaining_quantum = get_quantum(&next->task);
   current()->st.remaining_ticks = current_task_remaining_quantum;
 
-  stats_system_to_ready();
+  switch (current()->state) {
+    case ST_READY: stats_system_to_ready(); break;
+    case ST_BLOCKED: stats_system_to_blocked(); break;
+    case ST_RUN: break;
+    default: for(;;);
+  }
+  
   task_switch(next);
   stats_ready_to_system();
 }

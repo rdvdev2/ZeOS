@@ -1,3 +1,4 @@
+#include "stats.h"
 #include <block.h>
 #include <devices.h>
 #include <list.h>
@@ -27,6 +28,7 @@ int unblock(struct list_head *task_anchor) {
   if (task->state != ST_BLOCKED)
     return -1;
 
+  stats_blocked_to_ready(task);
   update_process_state_rr(task, &ready_queue);
 
   return 0;

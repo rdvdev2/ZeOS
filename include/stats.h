@@ -1,5 +1,8 @@
 #ifndef STATS_H
 #define STATS_H
+
+struct task_struct;
+
 /* Structure used by 'get_stats' function */
 struct stats {
   unsigned long user_ticks;
@@ -11,9 +14,12 @@ struct stats {
                                 READY->RUN transitions */
   unsigned long remaining_ticks;
 };
-#endif /* !STATS_H */
 
 void stats_user_to_system();
 void stats_system_to_user();
 void stats_system_to_ready();
 void stats_ready_to_system();
+void stats_system_to_blocked();
+void stats_blocked_to_ready(struct task_struct * thread);
+
+#endif /* !STATS_H */
