@@ -211,7 +211,7 @@ int sys_create_thread_stack(void (*function)(void* arg), int N, void* parameter)
 
   int phys_frames[N + 1];
   if (alloc_frames(N + 1, phys_frames) == -1) {
-    return -12;
+    return -ENOMEM;
   }
 
   page_table_entry *PT = get_PT(current());
