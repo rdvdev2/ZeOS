@@ -10,10 +10,9 @@
 /** Screen  ***/
 /**************/
 
-#define NUM_COLUMNS 80
-#define NUM_ROWS 25
-
 Byte x, y = 19;
+int foreground = 0x2;
+int background = 0x0;
 
 /* Read a byte from 'port' */
 Byte inb(unsigned short port) {
@@ -46,7 +45,8 @@ void printc(char c) {
       --y;
     }
   } else {
-    Word ch = (Word)(c & 0x00FF) | 0x0200;
+    int color = (background << 12 | foreground << 8) & 0xFF00;
+    Word ch = (Word)(c & 0x00FF) | color;
     Word *screen = (Word *)0xb8000;
     screen[(y * NUM_COLUMNS + x)] = ch;
     if (++x >= NUM_COLUMNS) {

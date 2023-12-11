@@ -7,8 +7,13 @@
 
 #include <types.h>
 
+#define NUM_COLUMNS 80
+#define NUM_ROWS 25
 /** Screen functions **/
 /**********************/
+
+extern Byte x,y;
+extern int foreground,background;
 
 Byte inb(unsigned short port);
 void printc(char c);

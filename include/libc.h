@@ -28,6 +28,12 @@ void exit();
 
 void perror();
 
+int gotoXY(int x, int y);
+
+int changeColor(int fg, int bg);
+
+int clrscr(char* b);
+
 int get_stats(int pid, struct stats *st);
 
 #endif /* __LIBC_H__ */
