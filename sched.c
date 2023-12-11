@@ -3,10 +3,12 @@
  */
 
 #include <devices.h>
+#include <errno.h>
 #include <io.h>
 #include <list.h>
 #include <mm.h>
 #include <msrs.h>
+#include <random.h>
 #include <sched.h>
 #include <stack.h>
 #include <utils.h>
@@ -76,6 +78,7 @@ void init_idle(void) {
       list_entry(pcb_entry, union task_union, task.queue_anchor);
 
   pcb->task.PID = 0;
+  pcb->task.TID = 0;
 
   allocate_DIR(&pcb->task);
 
@@ -98,6 +101,7 @@ void init_task1(void) {
       list_entry(pcb_entry, union task_union, task.queue_anchor);
 
   pcb->task.PID = 1;
+  pcb->task.TID = 1;
 
   allocate_DIR(&pcb->task);
   set_user_pages(&pcb->task);
@@ -111,6 +115,7 @@ void init_task1(void) {
   pcb->task.state =
       ST_RUN; // The init task is invoked by the OS after initialization
   current_task_remaining_quantum = 10;
+  INIT_LIST_HEAD(&pcb->task.thread_anchor);
 
   set_initial_stats(&pcb->task);
 }
@@ -122,8 +127,21 @@ void init_sched() {
 
   for (int i = 0; i < NR_TASKS; ++i) {
     task[i].task.PID = -1;
+    task[i].task.TID = -1;
     list_add(&task[i].task.queue_anchor, &free_queue);
   }
+}
+
+int clone_current_task(union task_union ** new) {
+  if (list_empty(&free_queue)) return -EAGAIN;
+
+  struct list_head * new_entry = list_first(&free_queue);
+  list_del(new_entry);
+  *new = list_entry(new_entry, union task_union, task.queue_anchor);
+
+  copy_data(current(), *new, sizeof(union task_union));
+
+  return 0;
 }
 
 struct task_struct *current() {
@@ -137,7 +155,8 @@ void inner_task_switch(union task_union *new) {
   tss.esp0 = (unsigned long)&new->stack[KERNEL_STACK_SIZE - 1];
   writeMSR(SYSENTER_ESP_MSR, (unsigned long)&new->stack[KERNEL_STACK_SIZE - 1]);
 
-  set_cr3((*new).task.dir_pages_baseAddr);
+  if (current()->dir_pages_baseAddr != new->task.dir_pages_baseAddr)
+    set_cr3((*new).task.dir_pages_baseAddr);
 
   stack_switch(new);
 }
@@ -224,4 +243,34 @@ struct task_struct *get_task_with_pid(int pid) {
   }
 
   return NULL;
+}
+
+struct task_struct *get_task_with_tid(int tid) {
+  for (int i = 0; i < NR_TASKS; ++i) {
+    if (task[i].task.TID == tid) {
+      return &task[i].task;
+    }
+  }
+
+  return NULL;
+}
+
+int allocate_new_pid() {
+  int pid;
+
+  do {
+    pid = rand();
+  } while (pid == -1 || get_task_with_pid(pid) != NULL);
+
+  return pid;
+}
+
+int allocate_new_tid() {
+  int tid;
+
+  do {
+    tid = rand();
+  } while (tid == -1 || get_task_with_tid(tid) != NULL);
+
+  return tid;
 }

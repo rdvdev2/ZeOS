@@ -36,4 +36,6 @@ int clrscr(char* b);
 
 int get_stats(int pid, struct stats *st);
 
+int threadCreateWithStack(void (*function)(void* arg), int N, void* parameter);
+
 #endif /* __LIBC_H__ */
