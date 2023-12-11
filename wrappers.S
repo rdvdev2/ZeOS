@@ -155,3 +155,25 @@ ENTRY(threadCreateWithStack)
 
 	pop %ebp
 	ret
+
+ENTRY(memRegGet)
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl 8(%ebp), %edx
+	CALL_OS(12)
+	HANDLE_ERRORS(12)
+
+	pop %ebp
+	ret
+
+ENTRY(memRegDel)
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl 8(%ebp), %edx
+	CALL_OS(13)
+	HANDLE_ERRORS(13)
+
+	pop %ebp
+	ret

@@ -257,3 +257,11 @@ int sys_create_thread_stack(void (*function)(void* arg), int N, void* parameter)
   new->task.esp = (unsigned long)&new->stack[KERNEL_STACK_SIZE - 19];
   return 0;
 }
+
+char* sys_memRegGet(int num_pages) {
+  return (char *) -ENOMEM;
+}
+
+int sys_memRegDel(char * m) {
+  return -EINVAL;
+}

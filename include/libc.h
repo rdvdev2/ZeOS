@@ -40,4 +40,8 @@ int get_stats(int pid, struct stats *st);
 
 int threadCreateWithStack(void (*function)(void* arg), int N, void* parameter);
 
+char* memRegGet(int num_pages);
+
+int memRegDel(char* m);
+
 #endif /* __LIBC_H__ */
