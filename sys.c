@@ -178,8 +178,8 @@ int sys_get_stats(int pid, struct stats *st) {
 }
 
 int sys_gotoXY(int new_x, int new_y) {
-  if(new_x < 0 || new_x > NUM_COLUMNS) return -22; //EINVAL
-  if(new_y < 0 || new_y > NUM_ROWS) return -22;
+  if(new_x < 0 || new_x > NUM_COLUMNS) return -EINVAL;
+  if(new_y < 0 || new_y > NUM_ROWS) return -EINVAL;
 
   x = new_x;
   y = new_y;
@@ -189,8 +189,8 @@ int sys_gotoXY(int new_x, int new_y) {
 
 int sys_changeColor(int fg, int bg) {
   //Background colors bigger than 8 activate blinking instead of a bright color
-  if(fg < 0 || fg > 0xF) return -22;
-  if(bg < 0 || bg > 0xF) return -22; 
+  if(fg < 0 || fg > 0xF) return -EINVAL;
+  if(bg < 0 || bg > 0xF) return -EINVAL; 
   
   foreground = fg;
   background = bg;
