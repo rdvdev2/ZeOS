@@ -259,17 +259,12 @@ int allocate_user_pages(int * block_sizes, int * block_starts, int block_count, 
     }
   }
 
-  if (allocated_count == block_count) return 0;
-
-  for (int i = 0; i < block_count; ++i) {
-    if (block_starts[i] == NULL) continue;
-
-    for (int j = 0; j < block_sizes[i]; ++j) {
-      del_ss_pag(PT, block_starts[i] + j);
-    }
+  if (allocated_count != block_count) {
+    deallocate_user_pages(block_sizes, block_starts, block_count, PT, NULL);
+    return -1;
   }
-
-  return -1;
+  
+  return 0;
 }
 
 /* Reverse of allocate_user_pages. If free_pages isn't null, the function
