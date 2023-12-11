@@ -261,7 +261,20 @@ int sys_create_thread_stack(void (*function)(void* arg), int N, void* parameter)
 }
 
 char* sys_memRegGet(int num_pages) {
-  return (char *) -ENOMEM;
+  if (num_pages <= 0)
+    return (char *) -EINVAL;
+
+  int frames[num_pages];
+  if (alloc_frames(num_pages, frames) < 0)
+    return (char *) -ENOMEM;
+
+  int first_page;
+  if (allocate_user_pages(&num_pages, &first_page, 1, get_PT(current()), frames) < 0) {
+    free_frames(num_pages, frames);
+    return (char *) -ENOMEM;
+  }
+  
+  return (char *) (PAGE_SIZE * first_page);
 }
 
 int sys_memRegDel(char * m) {
