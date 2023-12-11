@@ -3,6 +3,7 @@
  */
 
 #include <devices.h>
+#include <errno.h>
 #include <io.h>
 #include <list.h>
 #include <mm.h>
@@ -132,7 +133,7 @@ void init_sched() {
 }
 
 int clone_current_task(union task_union ** new) {
-  if (list_empty(&free_queue)) return -11;
+  if (list_empty(&free_queue)) return -EAGAIN;
 
   struct list_head * new_entry = list_first(&free_queue);
   list_del(new_entry);
