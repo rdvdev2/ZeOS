@@ -8,6 +8,8 @@
 
 #include <stats.h>
 
+int waitKey(char *buffer, int timeout);
+
 int write(int fd, const char *buffer, int size);
 
 int gettime();

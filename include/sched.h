@@ -5,6 +5,7 @@
 #ifndef __SCHED_H__
 #define __SCHED_H__
 
+#include <block.h>
 #include <list.h>
 #include <mm_address.h>
 #include <stats.h>
@@ -25,6 +26,7 @@ struct task_struct {
   int quantum;
   struct list_head thread_anchor;
   int TID; // Thread ID
+  BlockedTaggedUnion blocked;
 };
 
 union task_union {
