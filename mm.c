@@ -272,6 +272,22 @@ int allocate_user_pages(int * block_sizes, int * block_starts, int block_count, 
   return -1;
 }
 
+/* Reverse of allocate_user_pages. If free_pages isn't null, the function
+ * collects the frames used by the freed memory regions into the pointed
+ * array. */
+void deallocate_user_pages(int * block_sizes, int * block_starts, int block_count, page_table_entry * PT, int * free_frames) {
+  for (int i = 0; i < block_count; ++i) {
+    if (block_starts[i] == NULL) continue;
+
+    for (int j = 0; j < block_sizes[i]; ++j) {
+      if (free_frames != NULL) 
+        *(free_frames++) = get_frame(PT, block_starts[i] + j);
+      
+      del_ss_pag(PT, block_starts[i] + j);
+    }
+  }
+}
+
 void free_user_pages(struct task_struct *task) {
   int pag;
   page_table_entry *process_PT = get_PT(task);
