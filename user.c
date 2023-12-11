@@ -14,6 +14,7 @@ void bucle_infinito(void* n) {
   write(1, "Hola, soy el nuevo thread!\n", 27);
 
   char * buff = memRegGet(1);
+  char * buff2 = memRegGet(3);
   if ((int) buff < 0) {
     perror();
   } else {
@@ -21,6 +22,8 @@ void bucle_infinito(void* n) {
     write(1, buff, strlen(buff));
   }
   if (memRegDel(buff) == -1) 
+    perror();
+  if (memRegDel(buff2) == -1) 
     perror();
   
 
