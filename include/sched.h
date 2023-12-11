@@ -23,6 +23,8 @@ struct task_struct {
   enum state_t state;
   struct stats st;
   int quantum;
+  struct list_head thread_anchor;
+  int TID; // Thread ID
 };
 
 union task_union {
@@ -48,6 +50,8 @@ void init_task1(void);
 void init_idle(void);
 
 void init_sched(void);
+
+int clone_current_task(union task_union ** new);
 
 struct task_struct *current();
 
@@ -75,5 +79,9 @@ void schedule();
 int ret_from_fork();
 
 struct task_struct *get_task_with_pid(int pid);
+struct task_struct *get_task_with_tid(int tid);
+
+int allocate_new_pid();
+int allocate_new_tid();
 
 #endif /* __SCHED_H__ */

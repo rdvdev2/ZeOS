@@ -28,14 +28,11 @@ int sys_ni_syscall() { return -ENOSYS; }
 int sys_getpid() { return current()->PID; }
 
 int sys_fork() {
-  if (list_empty(&free_queue))
-    return -EAGAIN;
-  struct list_head *new_entry = list_first(&free_queue);
-  list_del(new_entry);
-  union task_union *new =
-      list_entry(new_entry, union task_union, task.queue_anchor);
-
-  copy_data(current(), new, sizeof(union task_union));
+  union task_union * new = NULL;
+  int clone_ret;
+  if ((clone_ret = clone_current_task(&new)) != 0) {
+    return -clone_ret;
+  }
 
   allocate_DIR(&new->task);
 
@@ -54,14 +51,8 @@ int sys_fork() {
     return -ENOMEM;
 
   int phys_frames[user_page_nr];
-
-  for (int i = 0; i < user_page_nr; ++i) {
-    phys_frames[i] = alloc_frame();
-    if (phys_frames[i] == -1) {
-      for (int j = 0; j < i; ++j)
-        free_frame(phys_frames[j]);
-      return -ENOMEM;
-    }
+  if (alloc_frames(user_page_nr, phys_frames) == -1) {
+    return -ENOMEM;
   }
 
   page_table_entry *new_PT = get_PT(&new->task);
@@ -84,11 +75,8 @@ int sys_fork() {
   del_ss_pag(parent_PT, temp_page);
   set_cr3(current()->dir_pages_baseAddr);
 
-  int pid;
-  do {
-    pid = rand();
-  } while (pid != -1 && get_task_with_pid(pid) != NULL);
-  new->task.PID = pid;
+  new->task.PID = allocate_new_pid();
+  new->task.TID = allocate_new_tid();
 
   new->stack[KERNEL_STACK_SIZE - 19] = (unsigned long)ret_from_fork;
   new->stack[KERNEL_STACK_SIZE - 20] =
@@ -103,9 +91,14 @@ int sys_fork() {
 void sys_exit() {
   struct task_struct *process = current();
 
-  clear_user_space(process);
+  if (list_empty(&process->thread_anchor))
+    clear_user_space(process);
+  list_del(&process->thread_anchor);
+
   process->PID = -1;
+  process->TID = -1;
   list_add(&(process->queue_anchor), &free_queue);
+
   sched_next_rr();
 }
 
@@ -206,5 +199,43 @@ int sys_clrscr(char* b) {
 	printc_xy(i,j,print_char);
     }
   }
+  return 0;
+}
+
+int sys_create_thread_stack(void (*function)(void* arg), int N, void* parameter) {
+  union task_union * new = NULL;
+  int clone_ret;
+  if ((clone_ret = clone_current_task(&new)) != 0) {
+    return clone_ret;
+  }
+
+  int phys_frames[N + 1];
+  if (alloc_frames(N + 1, phys_frames) == -1) {
+    return -ENOMEM;
+  }
+
+  page_table_entry *PT = get_PT(current());
+  int block_sizes[2] = { N, 1 };
+  int block_starts[2] = {};
+  allocate_user_pages(block_sizes, block_starts, 2, PT, phys_frames);
+  int first_stack_page = block_starts[0];
+  
+  set_cr3(get_DIR(current()));
+  
+  list_add(&new->task.thread_anchor, &current()->thread_anchor);
+
+  new->task.TID = allocate_new_tid();
+
+  unsigned long *stack_bottom = (unsigned long *) ((N + first_stack_page) * PAGE_SIZE - 4);
+
+  new->stack[KERNEL_STACK_SIZE - 3] = (unsigned long) (stack_bottom - 1); // ESP
+  new->stack[KERNEL_STACK_SIZE - 6] = (unsigned long) function; // EIP
+
+  unsigned long ret_to_pagefault = NULL;
+  copy_to_user(&parameter, stack_bottom, sizeof(unsigned long)); // PARAM
+  copy_to_user(&ret_to_pagefault,stack_bottom-1,sizeof(unsigned long)); // @RET
+
+  update_process_state_rr(&new->task, &ready_queue);
+  new->task.esp = (unsigned long)&new->stack[KERNEL_STACK_SIZE - 19];
   return 0;
 }

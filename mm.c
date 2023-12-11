@@ -2,6 +2,7 @@
  * mm.c - Memory Management: Paging & segment memory management
  */
 
+#include "mm_address.h"
 #include <hardware.h>
 #include <mm.h>
 #include <sched.h>
@@ -206,6 +207,59 @@ int alloc_frame(void) {
   return -1;
 }
 
+/* alloc_frames - A plural wrapper for alloc_frame
+ * frames should point to an int array with ammount entries.
+ * Returns 0 on success. */
+int alloc_frames(int ammount, int * frames) {
+  for (int i = 0; i < ammount; ++i) {
+    frames[i] = alloc_frame();
+
+    if (frames[i] == -1) {
+      free_frames(i, frames);      
+      return -1;
+    }
+  }
+
+  return 0;
+}
+
+/* Allocates multiple page blocks in the user pages. block_sizes should contain
+ * the size of every requested block, in descending order. block_starts will
+ * contain the first page of every block. All arrays should have size
+ * block_count */
+void allocate_user_pages(int * block_sizes, int * block_starts, int block_count, page_table_entry * PT, int * free_frames) {
+  int consecutive_free_pages = 0;
+  int allocated_count = 0;
+
+  for (int i = 0; i < block_count; ++i) {
+    block_starts[i] = NULL;
+  }
+  
+  for (int i = NUM_PAG_KERNEL; i < TOTAL_PAGES && allocated_count < block_count; ++i) {
+    if (PT[i].bits.present) {
+      consecutive_free_pages = 0;
+      continue;
+    }
+
+    ++consecutive_free_pages;
+
+    if (i != TOTAL_PAGES - 1 && !PT[i+1].bits.present) continue;
+
+    for (int j = 0; j < block_count; ++j) {
+      if (block_starts[j] != NULL) continue;
+      if (consecutive_free_pages < block_sizes[j]) continue;
+
+      block_starts[j] = i - consecutive_free_pages + 1;
+      consecutive_free_pages -= block_sizes[j];
+      ++allocated_count;
+
+      for (int k = 0; k < block_sizes[j]; ++k) {
+        set_ss_pag(PT, block_starts[j] + k, *(free_frames++));
+      }
+    }
+  }
+}
+
 void free_user_pages(struct task_struct *task) {
   int pag;
   page_table_entry *process_PT = get_PT(task);
@@ -232,6 +286,13 @@ void clear_user_space(struct task_struct *task) {
 void free_frame(unsigned int frame) {
   if ((frame > NUM_PAG_KERNEL) && (frame < TOTAL_PAGES))
     phys_mem[frame] = FREE_FRAME;
+}
+
+/* free_frames - Mark as FREE_FRAME the frames  'frames'.*/
+void free_frames(int ammount, int * frames) {
+  for (int i = 0; i < ammount; ++i) {
+    free_frame(frames[i]);
+  }
 }
 
 /* set_ss_pag - Associates logical page 'page' with physical page 'frame' */
