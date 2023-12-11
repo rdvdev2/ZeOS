@@ -7,9 +7,9 @@ ENTRY(sys_call_table)
 	.long sys_fork
 	.long sys_ni_syscall
 	.long sys_write
-	.long sys_ni_syscall
-	.long sys_ni_syscall
-	.long sys_ni_syscall
+	.long sys_gotoXY
+	.long sys_changeColor
+	.long sys_clrscr
 	.long sys_ni_syscall
 	.long sys_ni_syscall
 	.long sys_gettime

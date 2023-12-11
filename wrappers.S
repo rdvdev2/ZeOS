@@ -91,3 +91,38 @@ ENTRY(get_stats)
 
 	pop %ebp
 	ret
+
+ENTRY(gotoXY)
+	pushl %ebp
+	movl %esp, %ebp
+	
+	movl 8(%ebp), %edx
+	movl 12(%ebp), %ecx
+	CALL_OS(5)
+	HANDLE_ERRORS(5)
+
+	pop %ebp
+	ret
+
+ENTRY(changeColor)
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl 8(%ebp), %edx
+	movl 12(%ebp), %ecx
+	CALL_OS(6)
+	HANDLE_ERRORS(6)
+
+	pop %ebp
+	ret
+
+ENTRY(clrscr)
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl 8(%ebp), %edx
+	CALL_OS(7)
+	HANDLE_ERRORS(7)
+
+	pop %ebp
+	ret
