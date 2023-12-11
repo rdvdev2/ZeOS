@@ -1,6 +1,6 @@
 #include <circular_buffer.h>
 
-void init_buff(circular_buff *buff) {
+void init_buffer(circular_buff* buff) {
   buff->head = 0;
   buff->tail = 0;
 }

@@ -2,6 +2,7 @@
  * sched.c - initializes struct for task 0 anda task 1
  */
 
+#include "stats.h"
 #include <devices.h>
 #include <errno.h>
 #include <io.h>
@@ -27,7 +28,7 @@ struct task_struct *list_head_to_task_struct(struct list_head *l)
 }
 #endif
 
-extern struct list_head blocked;
+extern struct list_head keyboard_blocked;
 
 int current_task_remaining_quantum;
 
@@ -123,7 +124,7 @@ void init_task1(void) {
 void init_sched() {
   INIT_LIST_HEAD(&free_queue);
   INIT_LIST_HEAD(&ready_queue);
-  INIT_LIST_HEAD(&blocked);
+  INIT_LIST_HEAD(&keyboard_blocked);
 
   for (int i = 0; i < NR_TASKS; ++i) {
     task[i].task.PID = -1;
@@ -182,7 +183,7 @@ int needs_sched_rr() {
 }
 
 void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
-  if (current() == idle_task)
+  if (t == idle_task)
     return;
 
   if (t->state != ST_RUN)
@@ -196,7 +197,7 @@ void update_process_state_rr(struct task_struct *t, struct list_head *dest) {
 
     if (dest == &ready_queue)
       t->state = ST_READY;
-    else if (dest == &blocked)
+    else // Any other queue is a blocked queue
       t->state = ST_BLOCKED;
   }
 }
@@ -216,7 +217,13 @@ void sched_next_rr() {
   current_task_remaining_quantum = get_quantum(&next->task);
   current()->st.remaining_ticks = current_task_remaining_quantum;
 
-  stats_system_to_ready();
+  switch (current()->state) {
+    case ST_READY: stats_system_to_ready(); break;
+    case ST_BLOCKED: stats_system_to_blocked(); break;
+    case ST_RUN: break;
+    default: for(;;);
+  }
+  
   task_switch(next);
   stats_ready_to_system();
 }

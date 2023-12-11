@@ -1,6 +1,8 @@
 /*
  * interrupt.c -
  */
+#include <block.h>
+#include <circular_buffer.h>
 #include <devices.h>
 #include <entry.h>
 #include <hardware.h>
@@ -114,12 +116,26 @@ void keyboard_routine() {
     if (c == '\0')
       c = 'C';
     printc_xy(0, 0, c);
+
+    add_item(&keyboard_buffer, c);
+    if (!list_empty(&keyboard_blocked)) {
+      struct list_head *first = list_first(&keyboard_blocked);
+      unblock(first);
+    }
   }
 }
 
 void clock_routine() {
   zeos_show_clock();
   ++zeos_ticks;
+
+  struct list_head *e, *tmp;
+  list_for_each_safe(e, tmp, &keyboard_blocked) {
+    struct task_struct *task = list_entry(e, struct task_struct, queue_anchor);
+    if (--(task->blocked.blocked.keyboard.remaining_ticks) == 0) {
+      unblock(e);
+    }
+  }
 
   schedule();
 }
