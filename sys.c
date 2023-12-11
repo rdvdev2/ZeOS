@@ -235,7 +235,9 @@ int sys_create_thread_stack(void (*function)(void* arg), int N, void* parameter)
   page_table_entry *PT = get_PT(current());
   int block_sizes[2] = { N, 1 };
   int block_starts[2] = {};
-  allocate_user_pages(block_sizes, block_starts, 2, PT, phys_frames);
+  if (allocate_user_pages(block_sizes, block_starts, 2, PT, phys_frames) != 0) {
+    return -ENOMEM;
+  }
   int first_stack_page = block_starts[0];
   
   set_cr3(get_DIR(current()));

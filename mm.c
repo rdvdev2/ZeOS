@@ -227,7 +227,7 @@ int alloc_frames(int ammount, int * frames) {
  * the size of every requested block, in descending order. block_starts will
  * contain the first page of every block. All arrays should have size
  * block_count */
-void allocate_user_pages(int * block_sizes, int * block_starts, int block_count, page_table_entry * PT, int * free_frames) {
+int allocate_user_pages(int * block_sizes, int * block_starts, int block_count, page_table_entry * PT, int * free_frames) {
   int consecutive_free_pages = 0;
   int allocated_count = 0;
 
@@ -258,6 +258,18 @@ void allocate_user_pages(int * block_sizes, int * block_starts, int block_count,
       }
     }
   }
+
+  if (allocated_count == block_count) return 0;
+
+  for (int i = 0; i < block_count; ++i) {
+    if (block_starts[i] == NULL) continue;
+
+    for (int j = 0; j < block_sizes[i]; ++j) {
+      del_ss_pag(PT, block_starts[i] + j);
+    }
+  }
+
+  return -1;
 }
 
 void free_user_pages(struct task_struct *task) {
