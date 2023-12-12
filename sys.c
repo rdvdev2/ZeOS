@@ -65,6 +65,7 @@ int sys_fork() {
     if (parent_PT[i].bits.present) {
       int current_frame = *(next_phys_frame++);
       set_ss_pag(new_PT, i, current_frame);
+      new_PT[i].bits.avail = parent_PT[i].bits.avail;
 
       set_ss_pag(parent_PT, temp_page, current_frame);
       set_cr3(current()->dir_pages_baseAddr);

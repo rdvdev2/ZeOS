@@ -15,6 +15,7 @@ void bucle_infinito(void* n) {
 
   char * buff = memRegGet(1);
   char * buff2 = memRegGet(3);
+  fork();
   if ((int) buff < 0) {
     perror();
   } else {
