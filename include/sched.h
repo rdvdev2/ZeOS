@@ -15,6 +15,7 @@
 #define KERNEL_STACK_SIZE 1024
 
 enum state_t { ST_RUN, ST_READY, ST_BLOCKED };
+struct sem_group;
 
 struct task_struct {
   int PID; /* Process ID. This MUST be the first field of the struct. */
@@ -27,7 +28,7 @@ struct task_struct {
   struct list_head thread_anchor;
   int TID; // Thread ID
   BlockedTaggedUnion blocked;
-  struct list_head semaphore_anchor;
+  struct sem_group *sem_group;
 };
 
 union task_union {
@@ -37,6 +38,8 @@ union task_union {
 
 extern union task_union task[NR_TASKS]; /* Vector de tasques */
 extern struct task_struct *idle_task;
+
+extern struct list_head free_sem_group_queue;
 
 extern struct list_head free_queue;
 extern struct list_head ready_queue;

@@ -51,6 +51,7 @@ SYSOBJ = \
 	stats.o \
 	circular_buffer.o \
 	block.o \
+        semaphore.o \
 
 LIBZEOS = -L . -l zeos
 
