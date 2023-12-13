@@ -351,13 +351,37 @@ sem_t* sys_semCreate(int initial_value) {
 }
 
 int sys_semWait(sem_t* s) {  
-  return -1;
+  struct sem* current_semaphore = get_semaphore(s);
+  
+  if(current_semaphore == 0) return -1;//Again error, i'll look it up later
+  if(current_semaphore->in_use == 0) return -1;
+  
+  if(--(current_semaphore->counter) < 0) block();
+  return 0;
 }
 
 int sys_semSignal(sem_t* s) {
-  return -1;
+  struct sem* current_semaphore = get_semaphore(s);
+
+  if(current_semaphore == 0) return -1;
+  if(current_semaphore->in_use == 0) return -1;
+
+  if(++(current_semaphore->counter) > 0) {
+    struct list_head *first_blocked = list_first(&current_semaphore->blocked_anchor);
+    if (unblock(&current_semaphore->blocked_anchor) < 0) return -1;
+    list_del(first_blocked);
+  }
+  return 0;
 }
 
 int sys_semDestroy(sem_t* s) {
-  return -1;
+  /*struct sem* current_semaphore = get_semaphore(s);
+  if(current_semaphore == 0) return -1;
+  if(current_semaphore->in_use == 0) return -1;
+ 
+  unblock_blocked_semaphore_threads(current_semaphore);
+ 
+  current_semaphore->in_use = 0;
+  INIT_LIST_HEAD(current_semaphore->blocked_anchor);*/
+  return 0;
 }

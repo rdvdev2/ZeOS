@@ -25,5 +25,7 @@ struct sem_group* assign_semaphore_group(struct task_struct *p) {
 }
 
 struct sem* get_semaphore(sem_t *s) {
+  int sem_number = (int) s;
+  if(sem_number < 0 || sem_number > NR_TASKS) return 0;
   return &current()->sem_group->semaphores[(int)s];
 }
