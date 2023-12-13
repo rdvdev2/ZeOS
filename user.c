@@ -30,7 +30,7 @@ void bucle_infinito(void *n) {
 
 void print_stats() {
   int pid = getpid();
-  struct stats my_stats = {};
+  struct stats my_stats;
   if (get_stats(pid, &my_stats) < 0) {
     perror();
     return;
@@ -53,10 +53,10 @@ void print_stats() {
 }
 
 void echo() {
-  char *buff = "";
+  char buff;
   for (;;) {
-    if (waitKey(buff, 300) == 0) {
-      write(1, buff, 1);
+    if (waitKey(&buff, 300) == 0) {
+      write(1, &buff, 1);
       print_stats();
     } else
       perror();
