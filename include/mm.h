@@ -18,12 +18,23 @@ extern page_table_entry dir_pages[NR_TASKS][TOTAL_PAGES];
 
 int init_frames(void);
 int alloc_frame(void);
-int alloc_frames(int ammount, int * frames);
+int alloc_frames(int ammount, int *frames);
 void free_frame(unsigned int frame);
-void free_frames(int ammount, int * frames);
+void free_frames(int ammount, int *frames);
 void set_user_pages(struct task_struct *task);
 void clear_user_space(struct task_struct *task);
-int allocate_user_pages(int * block_sizes, int * block_starts, int block_count, page_table_entry * PT, int * free_frames);
+int allocate_user_pages(
+    int *block_sizes,
+    int *block_starts,
+    int block_count,
+    page_table_entry *PT,
+    int *free_frames);
+void deallocate_user_pages(
+    int *block_sizes,
+    int *block_starts,
+    int block_count,
+    page_table_entry *PT,
+    int *free_frames);
 
 extern Descriptor *gdt;
 

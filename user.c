@@ -5,13 +5,28 @@ char buff[24];
 
 int pid;
 
-void bucle_infinito(void* n) {
-  int random_number = *(int *) n;
+void bucle_infinito(void *n) {
+  int random_number = *(int *)n;
   char random_number_buff[10] = "";
   itoa(random_number, random_number_buff, 10);
   write(1, random_number_buff, strlen(random_number_buff));
 
   write(1, "Hola, soy el nuevo thread!\n", 27);
+
+  char *buff = memRegGet(1);
+  char *buff2 = memRegGet(3);
+  fork();
+  if ((int)buff < 0) {
+    perror();
+  } else {
+    strcpy(buff, "Hello, Buffer!\n");
+    write(1, buff, strlen(buff));
+  }
+  if (memRegDel(buff) == -1)
+    perror();
+  if (memRegDel(buff2) == -1)
+    perror();
+
   exit();
 }
 
@@ -97,24 +112,28 @@ int __attribute__((__section__(".text.main"))) main(void) {
   strcat(pid_msg_buff, pid_buff);
   strcat(pid_msg_buff, "\n\n");
   write(1, pid_msg_buff, strlen(pid_msg_buff));
-  
- int bg = 0;
- int fg = 0;
+
+  int bg = 0;
+  int fg = 0;
   int next = gettime() + 300;
-  
+
   int random_number = 5;
-  if (fork_ret > 0)threadCreateWithStack(bucle_infinito, 3, (void *)&random_number);
+  if (fork_ret > 0)
+    threadCreateWithStack(bucle_infinito, 3, (void *)&random_number);
   while (1) {
     if (gettime() > next) {
-      
-/*    TEST ONLY!!! Please uncomment variables bg and fg above*/
+
+      /*    TEST ONLY!!! Please uncomment variables bg and fg above*/
       ++bg;
       ++fg;
       char a = 'a';
-      char *null_char = ((void *) 0);
-      if (bg <= 0xF && fg <= 0xF)changeColor(fg,bg);
-      else if (bg == 20) clrscr(&a);
-      else if (bg == 30) clrscr(null_char);
+      char *null_char = ((void *)0);
+      if (bg <= 0xF && fg <= 0xF)
+        changeColor(fg, bg);
+      else if (bg == 20)
+        clrscr(&a);
+      else if (bg == 30)
+        clrscr(null_char);
 
       next += 300;
 

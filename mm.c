@@ -210,12 +210,12 @@ int alloc_frame(void) {
 /* alloc_frames - A plural wrapper for alloc_frame
  * frames should point to an int array with ammount entries.
  * Returns 0 on success. */
-int alloc_frames(int ammount, int * frames) {
+int alloc_frames(int ammount, int *frames) {
   for (int i = 0; i < ammount; ++i) {
     frames[i] = alloc_frame();
 
     if (frames[i] == -1) {
-      free_frames(i, frames);      
+      free_frames(i, frames);
       return -1;
     }
   }
@@ -227,15 +227,21 @@ int alloc_frames(int ammount, int * frames) {
  * the size of every requested block, in descending order. block_starts will
  * contain the first page of every block. All arrays should have size
  * block_count */
-int allocate_user_pages(int * block_sizes, int * block_starts, int block_count, page_table_entry * PT, int * free_frames) {
+int allocate_user_pages(
+    int *block_sizes,
+    int *block_starts,
+    int block_count,
+    page_table_entry *PT,
+    int *free_frames) {
   int consecutive_free_pages = 0;
   int allocated_count = 0;
 
   for (int i = 0; i < block_count; ++i) {
     block_starts[i] = NULL;
   }
-  
-  for (int i = NUM_PAG_KERNEL; i < TOTAL_PAGES && allocated_count < block_count; ++i) {
+
+  for (int i = NUM_PAG_KERNEL; i < TOTAL_PAGES && allocated_count < block_count;
+       ++i) {
     if (PT[i].bits.present) {
       consecutive_free_pages = 0;
       continue;
@@ -243,11 +249,14 @@ int allocate_user_pages(int * block_sizes, int * block_starts, int block_count, 
 
     ++consecutive_free_pages;
 
-    if (i != TOTAL_PAGES - 1 && !PT[i+1].bits.present) continue;
+    if (i != TOTAL_PAGES - 1 && !PT[i + 1].bits.present)
+      continue;
 
     for (int j = 0; j < block_count; ++j) {
-      if (block_starts[j] != NULL) continue;
-      if (consecutive_free_pages < block_sizes[j]) continue;
+      if (block_starts[j] != NULL)
+        continue;
+      if (consecutive_free_pages < block_sizes[j])
+        continue;
 
       block_starts[j] = i - consecutive_free_pages + 1;
       consecutive_free_pages -= block_sizes[j];
@@ -259,17 +268,34 @@ int allocate_user_pages(int * block_sizes, int * block_starts, int block_count, 
     }
   }
 
-  if (allocated_count == block_count) return 0;
+  if (allocated_count != block_count) {
+    deallocate_user_pages(block_sizes, block_starts, block_count, PT, NULL);
+    return -1;
+  }
 
+  return 0;
+}
+
+/* Reverse of allocate_user_pages. If free_pages isn't null, the function
+ * collects the frames used by the freed memory regions into the pointed
+ * array. */
+void deallocate_user_pages(
+    int *block_sizes,
+    int *block_starts,
+    int block_count,
+    page_table_entry *PT,
+    int *free_frames) {
   for (int i = 0; i < block_count; ++i) {
-    if (block_starts[i] == NULL) continue;
+    if (block_starts[i] == NULL)
+      continue;
 
     for (int j = 0; j < block_sizes[i]; ++j) {
+      if (free_frames != NULL)
+        *(free_frames++) = get_frame(PT, block_starts[i] + j);
+
       del_ss_pag(PT, block_starts[i] + j);
     }
   }
-
-  return -1;
 }
 
 void free_user_pages(struct task_struct *task) {
@@ -301,7 +327,7 @@ void free_frame(unsigned int frame) {
 }
 
 /* free_frames - Mark as FREE_FRAME the frames  'frames'.*/
-void free_frames(int ammount, int * frames) {
+void free_frames(int ammount, int *frames) {
   for (int i = 0; i < ammount; ++i) {
     free_frame(frames[i]);
   }
