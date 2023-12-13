@@ -117,6 +117,7 @@ void init_task1(void) {
       ST_RUN; // The init task is invoked by the OS after initialization
   current_task_remaining_quantum = 10;
   INIT_LIST_HEAD(&pcb->task.thread_anchor);
+  INIT_LIST_HEAD(&pcb->task.semaphore_anchor);
 
   set_initial_stats(&pcb->task);
 }

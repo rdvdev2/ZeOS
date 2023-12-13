@@ -158,12 +158,12 @@ ENTRY(threadCreateWithStack)
 
 ENTRY(memRegGet)
 	pushl %ebp
-	movl %esp, %ebp
+     	movl %esp, %ebp
 
 	movl 8(%ebp), %edx
-	CALL_OS(12)
+ 	CALL_OS(12)
 	HANDLE_ERRORS(12)
-
+	
 	pop %ebp
 	ret
 
@@ -174,6 +174,52 @@ ENTRY(memRegDel)
 	movl 8(%ebp), %edx
 	CALL_OS(13)
 	HANDLE_ERRORS(13)
+
+	pop %ebp
+	ret
+
+ENTRY(semCreate)
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl 8(%ebp), %edx
+	CALL_OS(64)
+	HANDLE_ERRORS(64)
+
+	pop %ebp
+	ret
+
+ENTRY(semWait)
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl 8(%ebp), %edx
+	CALL_OS(65)
+	HANDLE_ERRORS(65)
+
+	pop %ebp
+	ret
+
+
+ENTRY(semSignal)
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl 8(%ebp), %edx
+	CALL_OS(66)
+	HANDLE_ERRORS(66)
+
+	pop %ebp
+	ret
+
+
+ENTRY(semDestroy)
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl 8(%ebp), %edx
+	CALL_OS(67)
+	HANDLE_ERRORS(67)
 
 	pop %ebp
 	ret

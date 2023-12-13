@@ -27,6 +27,7 @@ struct task_struct {
   struct list_head thread_anchor;
   int TID; // Thread ID
   BlockedTaggedUnion blocked;
+  struct list_head semaphore_anchor;
 };
 
 union task_union {
