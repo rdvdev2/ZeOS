@@ -4,10 +4,14 @@
 
 #include <errors.h>
 #include <libc.h>
-
+#include <libpthread.h>
 #include <types.h>
 
 int errno;
+
+void _init_libc() {
+  __set_thread_wrapper(pthread_wrapper);
+}
 
 inline char itoc(int n) {
   if (n < 10)

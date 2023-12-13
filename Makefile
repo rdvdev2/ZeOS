@@ -59,6 +59,7 @@ USROBJ = \
 	libc.o \
 	wrappers.o \
 	errors.o \
+	libpthread.o \
 	# libjp.a \
 
 all:zeos.bin
