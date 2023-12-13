@@ -105,6 +105,7 @@ void init_task1(void) {
 
   pcb->task.PID = 1;
   pcb->task.TID = 1;
+  pcb->task.sem_group = 0;
 
   allocate_DIR(&pcb->task);
   set_user_pages(&pcb->task);

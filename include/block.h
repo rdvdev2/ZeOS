@@ -19,5 +19,4 @@ typedef struct {
 
 void block();
 int unblock(struct list_head *task_anchor);
-
 #endif

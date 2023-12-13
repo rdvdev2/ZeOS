@@ -10,6 +10,7 @@
 #include <mm.h>
 #include <random.h>
 #include <sched.h>
+#include <semaphore.h>
 #include <segment.h>
 #include <system.h>
 #include <types.h>
@@ -88,6 +89,9 @@ int __attribute__((__section__(".text.main"))) main(void) {
   /* Initialize Scheduling */
   init_sched();
 
+  /* Initialize Semaphores */
+  init_sems();
+ 
   /* Initialize idle task  data */
   init_idle();
   /* Initialize task 1 data */

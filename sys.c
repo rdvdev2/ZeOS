@@ -375,13 +375,14 @@ int sys_semSignal(sem_t* s) {
 }
 
 int sys_semDestroy(sem_t* s) {
-  /*struct sem* current_semaphore = get_semaphore(s);
+  struct sem* current_semaphore = get_semaphore(s);
   if(current_semaphore == 0) return -1;
   if(current_semaphore->in_use == 0) return -1;
+  if(current_semaphore->parent_TID != current()->TID) return -1;
  
   unblock_blocked_semaphore_threads(current_semaphore);
  
-  current_semaphore->in_use = 0;
-  INIT_LIST_HEAD(current_semaphore->blocked_anchor);*/
+  initialize_semaphore(current_semaphore);
+  INIT_LIST_HEAD(&current_semaphore->blocked_anchor);
   return 0;
 }
