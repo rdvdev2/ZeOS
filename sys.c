@@ -225,6 +225,18 @@ int sys_clrscr(char *b) {
   return 0;
 }
 
+void (*pthread_wrapper)(void*(void*), void *) = NULL;
+
+int sys_set_thread_wrapper(void (*wrapper)(void*(void*), void*)) {
+  if (pthread_wrapper != NULL) return -EINVAL;
+  
+  if (!access_ok(VERIFY_READ, wrapper, 1))
+    return -EFAULT;
+
+  pthread_wrapper = wrapper;
+  return 0;
+}
+
 int sys_create_thread_stack(
     void (*function)(void *arg),
     int N,
@@ -257,14 +269,15 @@ int sys_create_thread_stack(
   unsigned long *stack_bottom =
       (unsigned long *)((N + first_stack_page) * PAGE_SIZE - 4);
 
-  new->stack[KERNEL_STACK_SIZE - 3] = (unsigned long)(stack_bottom - 1); // ESP
-  new->stack[KERNEL_STACK_SIZE - 6] = (unsigned long)function;           // EIP
+  new->stack[KERNEL_STACK_SIZE - 3] = (unsigned long)(stack_bottom - 2); // ESP
+  new->stack[KERNEL_STACK_SIZE - 6] = (unsigned long) pthread_wrapper;           // EIP
 
   unsigned long ret_to_pagefault = NULL;
   copy_to_user(&parameter, stack_bottom, sizeof(unsigned long)); // PARAM
+  copy_to_user(&function, stack_bottom - 1, sizeof(unsigned long)); // FUNC
   copy_to_user(
       &ret_to_pagefault,
-      stack_bottom - 1,
+      stack_bottom - 2,
       sizeof(unsigned long)); // @RET
 
   update_process_state_rr(&new->task, &ready_queue);

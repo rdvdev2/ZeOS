@@ -8,6 +8,8 @@
 
 #include <stats.h>
 
+void _init_libc();
+
 int waitKey(char *buffer, int timeout);
 
 int write(int fd, const char *buffer, int size);
@@ -37,6 +39,10 @@ int changeColor(int fg, int bg);
 int clrscr(char *b);
 
 int get_stats(int pid, struct stats *st);
+
+// This function is intended to be used by libc, and the user is discouraged from
+// using it themselves.
+int __set_thread_wrapper(void (*wrapper)(void*(void*), void*));
 
 int threadCreateWithStack(void (*function)(void *arg), int N, void *parameter);
 

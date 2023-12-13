@@ -139,6 +139,17 @@ ENTRY(clrscr)
 	pop %ebp
 	ret
 
+ENTRY(__set_thread_wrapper)
+	pushl %ebp
+	movl %esp, %ebp
+
+	movl 8(%ebp), %edx
+	CALL_OS(55)
+	HANDLE_ERRORS(55)
+
+	pop %ebp
+	ret
+
 ENTRY(threadCreateWithStack)
 	pushl %ebp
 	movl %esp, %ebp
