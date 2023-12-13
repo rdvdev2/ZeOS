@@ -9,8 +9,25 @@
 
 int errno;
 
+extern int main();
+
+// This is a small wrapper that initializes the libc for the user, similar to crt0.o
+int __attribute__((__section__(".text.main"))) __start() {
+  _init_libc();
+
+  return main();
+}
+
 void _init_libc() {
-  __set_thread_wrapper(pthread_wrapper);
+  if (__set_thread_wrapper(pthread_wrapper) != 0) {
+    int _errno = errno;
+
+    char msg[] = "[LIBC initialization] Couldn't configure the thread wrapper: ";
+    write(1, msg, sizeof(msg));
+
+    errno = _errno;
+    perror();
+  }
 }
 
 inline char itoc(int n) {
