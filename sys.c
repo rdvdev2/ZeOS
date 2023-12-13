@@ -217,9 +217,14 @@ int sys_clrscr(char *b) {
 
   if (b != ((void *)0))
     print_char = *b;
+
+  int color = (background << 12 | foreground << 8) & 0xFF00;
+  Word ch = (Word)(print_char & 0x00FF) | color;
+  Word *screen = (Word *)0xb8000;
+
   for (Byte i = 0; i < NUM_COLUMNS; ++i) {
     for (Byte j = 0; j < NUM_ROWS; ++j) {
-      printc_xy(i, j, print_char);
+        screen[(j * NUM_COLUMNS + i)] = ch;
     }
   }
   return 0;
