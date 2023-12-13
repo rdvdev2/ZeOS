@@ -1,5 +1,7 @@
 #include <libc.h>
 #include <stats.h>
+#include <colors.h>
+#include <tetris.h>
 
 char buff[24];
 
@@ -69,6 +71,23 @@ int main(void) {
   /* __asm__ __volatile__ ("mov %0, %%cr3"::"r" (0) ); */
 
   write(1, "Hello, ZeOS!\n", 14);
+
+  // Hold the key 't' to run the testing code, otherwise jump to the game code.
+  char hold_to_test;
+  if (waitKey(&hold_to_test, 1) == -1 || hold_to_test != 't') {
+    tetris_main();
+
+    changeColor(BRIGHT_WHITE, RED);
+    clrscr(0);
+    gotoXY(SCREEN_COLUMNS / 3, SCREEN_ROWS / 2);
+    char * msg = "ERROR: The game returned.";
+    write(1, msg, strlen(msg));
+    gotoXY(1, SCREEN_ROWS / 2 + 2);
+    msg = "This isn't supposed to happen. Hold t during boot to trigger the testing code.";
+    write(1, msg, strlen(msg));
+
+    for (;;);
+  }
 
   switch (fork()) {
   case 0:

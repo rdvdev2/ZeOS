@@ -8,6 +8,9 @@
 
 #include <stats.h>
 
+#define SCREEN_COLUMNS 80
+#define SCREEN_ROWS 25
+
 void _init_libc();
 
 int waitKey(char *buffer, int timeout);

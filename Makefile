@@ -60,6 +60,7 @@ USROBJ = \
 	wrappers.o \
 	errors.o \
 	libpthread.o \
+	tetris.o \
 	# libjp.a \
 
 all:zeos.bin
