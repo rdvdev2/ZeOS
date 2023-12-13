@@ -1,8 +1,8 @@
 #ifndef DEVICES_H__
 #define DEVICES_H__
 
-#include <list.h>
 #include <circular_buffer.h>
+#include <list.h>
 
 extern unsigned int zeos_ticks;
 extern struct list_head keyboard_blocked;

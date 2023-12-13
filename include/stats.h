@@ -20,6 +20,6 @@ void stats_system_to_user();
 void stats_system_to_ready();
 void stats_ready_to_system();
 void stats_system_to_blocked();
-void stats_blocked_to_ready(struct task_struct * thread);
+void stats_blocked_to_ready(struct task_struct *thread);
 
 #endif /* !STATS_H */

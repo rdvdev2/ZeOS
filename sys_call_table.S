@@ -14,8 +14,8 @@ ENTRY(sys_call_table)
 	.long sys_ni_syscall
 	.long sys_gettime
 	.long sys_ni_syscall
-	.long sys_ni_syscall
-	.long sys_ni_syscall
+	.long sys_memRegGet
+	.long sys_memRegDel
 	.long sys_ni_syscall
 	.long sys_ni_syscall
 	.long sys_ni_syscall

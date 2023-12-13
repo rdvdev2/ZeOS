@@ -12,8 +12,8 @@
 /** Screen functions **/
 /**********************/
 
-extern Byte x,y;
-extern int foreground,background;
+extern Byte x, y;
+extern int foreground, background;
 
 Byte inb(unsigned short port);
 void printc(char c);

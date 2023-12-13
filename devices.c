@@ -1,5 +1,5 @@
-#include <circular_buffer.h>
 #include <block.h>
+#include <circular_buffer.h>
 #include <io.h>
 #include <list.h>
 #include <sched.h>
@@ -25,7 +25,7 @@ int sys_read_key(char *buffer, int timeout) {
   if (remove_item(&keyboard_buffer, buffer) == 0) {
     return 1;
   }
-  
+
   current()->blocked.reason = BR_KEYBOARD;
   current()->blocked.blocked.keyboard.remaining_ticks = timeout;
   block();
@@ -33,6 +33,6 @@ int sys_read_key(char *buffer, int timeout) {
   if (remove_item(&keyboard_buffer, buffer) == 0) {
     return 1;
   }
-  
+
   return -62; // ETIME
 }
