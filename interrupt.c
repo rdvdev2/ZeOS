@@ -117,7 +117,6 @@ void keyboard_routine() {
     char c = char_map[data];
     if (c == '\0')
       c = 'C';
-    printc_xy(0, 0, c);
 
     add_item(&keyboard_buffer, c);
     if (!list_empty(&keyboard_blocked)) {
