@@ -39,9 +39,9 @@ page_table_entry *get_DIR(struct task_struct *t) {
 
 /* get_PT - Returns the Page Table address for task 't' */
 page_table_entry *get_PT(struct task_struct *t) {
-  return (page_table_entry
-              *)(((unsigned int)(t->dir_pages_baseAddr->bits.pbase_addr))
-                 << 12);
+  return (
+      page_table_entry
+          *)(((unsigned int)(t->dir_pages_baseAddr->bits.pbase_addr)) << 12);
 }
 
 int allocate_DIR(struct task_struct *t) {
@@ -133,10 +133,11 @@ void init_sched() {
   }
 }
 
-int clone_current_task(union task_union ** new) {
-  if (list_empty(&free_queue)) return -EAGAIN;
+int clone_current_task(union task_union **new) {
+  if (list_empty(&free_queue))
+    return -EAGAIN;
 
-  struct list_head * new_entry = list_first(&free_queue);
+  struct list_head *new_entry = list_first(&free_queue);
   list_del(new_entry);
   *new = list_entry(new_entry, union task_union, task.queue_anchor);
 
@@ -218,12 +219,19 @@ void sched_next_rr() {
   current()->st.remaining_ticks = current_task_remaining_quantum;
 
   switch (current()->state) {
-    case ST_READY: stats_system_to_ready(); break;
-    case ST_BLOCKED: stats_system_to_blocked(); break;
-    case ST_RUN: break;
-    default: for(;;);
+  case ST_READY:
+    stats_system_to_ready();
+    break;
+  case ST_BLOCKED:
+    stats_system_to_blocked();
+    break;
+  case ST_RUN:
+    break;
+  default:
+    for (;;)
+      ;
   }
-  
+
   task_switch(next);
   stats_ready_to_system();
 }

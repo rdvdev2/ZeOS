@@ -34,14 +34,14 @@ int gotoXY(int x, int y);
 
 int changeColor(int fg, int bg);
 
-int clrscr(char* b);
+int clrscr(char *b);
 
 int get_stats(int pid, struct stats *st);
 
-int threadCreateWithStack(void (*function)(void* arg), int N, void* parameter);
+int threadCreateWithStack(void (*function)(void *arg), int N, void *parameter);
 
-char* memRegGet(int num_pages);
+char *memRegGet(int num_pages);
 
-int memRegDel(char* m);
+int memRegDel(char *m);
 
 #endif /* __LIBC_H__ */

@@ -69,8 +69,8 @@ int sys_fork() {
 
       set_ss_pag(parent_PT, temp_page, current_frame);
       set_cr3(current()->dir_pages_baseAddr);
-      copy_data((void *)(i * PAGE_SIZE), (void *)(temp_page * PAGE_SIZE),
-                PAGE_SIZE);
+      copy_data(
+          (void *)(i * PAGE_SIZE), (void *)(temp_page * PAGE_SIZE), PAGE_SIZE);
     }
   }
 
@@ -225,8 +225,10 @@ int sys_clrscr(char *b) {
   return 0;
 }
 
-int sys_create_thread_stack(void (*function)(void *arg), int N,
-                            void *parameter) {
+int sys_create_thread_stack(
+    void (*function)(void *arg),
+    int N,
+    void *parameter) {
   union task_union *new = NULL;
   int clone_ret;
   if ((clone_ret = clone_current_task(&new)) != 0) {
@@ -260,8 +262,10 @@ int sys_create_thread_stack(void (*function)(void *arg), int N,
 
   unsigned long ret_to_pagefault = NULL;
   copy_to_user(&parameter, stack_bottom, sizeof(unsigned long)); // PARAM
-  copy_to_user(&ret_to_pagefault, stack_bottom - 1,
-               sizeof(unsigned long)); // @RET
+  copy_to_user(
+      &ret_to_pagefault,
+      stack_bottom - 1,
+      sizeof(unsigned long)); // @RET
 
   update_process_state_rr(&new->task, &ready_queue);
   new->task.esp = (unsigned long)&new->stack[KERNEL_STACK_SIZE - 19];
@@ -311,7 +315,7 @@ int sys_memRegDel(char *m) {
           PT_AVAIL_USER_ALLOCATED_HEAD) == PT_AVAIL_USER_ALLOCATED)
     ++num_pages;
 
-  int frames[num_pages]; 
+  int frames[num_pages];
   deallocate_user_pages(&num_pages, &first_page, 1, PT, frames);
   free_frames(num_pages, frames);
 

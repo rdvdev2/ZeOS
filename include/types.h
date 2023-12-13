@@ -149,8 +149,8 @@ typedef union {
   } bits;
 } page_table_entry;
 
-#define PT_AVAIL_USER_NOT_ALLOCATED  0b000
-#define PT_AVAIL_USER_ALLOCATED      0b001
+#define PT_AVAIL_USER_NOT_ALLOCATED 0b000
+#define PT_AVAIL_USER_ALLOCATED 0b001
 #define PT_AVAIL_USER_ALLOCATED_HEAD 0b011
 
 #endif /* __TYPES_H__ */

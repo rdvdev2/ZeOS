@@ -53,7 +53,7 @@ void init_idle(void);
 
 void init_sched(void);
 
-int clone_current_task(union task_union ** new);
+int clone_current_task(union task_union **new);
 
 struct task_struct *current();
 
