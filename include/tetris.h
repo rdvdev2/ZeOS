@@ -21,6 +21,7 @@ struct GameState {
   enum CellState currentPiece;
   int currentPieceX, currentPieceY, currentPieceRotations;
   char lastInput;
+  int ticks;
 };
 
 struct SwappingGameState {

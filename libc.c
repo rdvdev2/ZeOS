@@ -92,3 +92,16 @@ void perror() {
   write(1, msg, strlen(msg));
   write(1, "\n", 1);
 }
+
+void * memmove(void * dest, const void * src, unsigned long num) {
+  if (src > dest)
+    for (unsigned long i = 0; i < num; ++i) {
+      ((char*)dest)[i] = ((char*)src)[i];
+    }
+  else
+    for (unsigned long i = num - 1; i >= 0; --i) {
+      ((char*)dest)[i] = ((char*)src)[i];
+    }
+
+  return dest;
+}

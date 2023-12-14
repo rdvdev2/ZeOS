@@ -1,11 +1,10 @@
-#include "utils.h"
 #include <tetris.h>
 
 #include <colors.h>
 #include <libc.h>
 #include <random.h>
 
-const int TICKS_PER_FRAME = 10;
+const int TICKS_PER_FRAME = 1;
 
 const enum CellState TETROMINOS[] = {
   CS_I_PIECE,
@@ -16,6 +15,10 @@ const enum CellState TETROMINOS[] = {
   CS_J_PIECE,
   CS_L_PIECE,
 };
+
+void input_thread(void * state) {
+  for(;;) input(state);
+}
 
 void tetris_main() {
   struct SwappingGameState *gameState = (struct SwappingGameState *)memRegGet(
@@ -30,49 +33,101 @@ void tetris_main() {
   gameState->gameStates[0].currentPieceY = -4;
   gameState->gameStates[0].currentPieceRotations = 0;
 
+  threadCreateWithStack(input_thread, 1, &gameState->gameStates[0]);
+  
   int lastUpdate = gettime();
   for(;;) {
     int current;
     do {
       current = gettime();
     } while (lastUpdate / TICKS_PER_FRAME == current / TICKS_PER_FRAME);
-    lastUpdate = current;
+    gameState->gameStates[0].ticks = lastUpdate = current;
     
-    input(&gameState->gameStates[0]);
     update(&gameState->gameStates[0]);
     draw(&gameState->gameStates[0]);
   }
 }
 
 void input(struct GameState *state) {
-  waitKey(&state->lastInput, 1);
+  waitKey(&state->lastInput, 2147483647);
+}
+
+int try_apply(struct GameState *state, int offsetX, int offsetY, int offsetRotation) {
+  remove_piece(state, state->currentPieceX, state->currentPieceY, state->currentPiece, state->currentPieceRotations);
+  if (can_put_piece(state, state->currentPieceX + offsetX, state->currentPieceY + offsetY, state->currentPiece, state->currentPieceRotations + offsetRotation)) {
+    state->currentPieceX += offsetX;
+    state->currentPieceY += offsetY;
+    state->currentPieceRotations += offsetRotation;
+
+    put_piece(state, state->currentPieceX, state->currentPieceY, state->currentPiece, state->currentPieceRotations);
+
+    return 1;
+  } else {
+    put_piece(state, state->currentPieceX, state->currentPieceY, state->currentPiece, state->currentPieceRotations);
+
+    return 0;
+  }
+}
+
+void hard_drop(struct GameState * state) {
+  while (try_apply(state, 0, 1, 0));
 }
 
 void update(struct GameState *state) {
   int offsetX = 0;
-  int offsetY = 1;
+  int offsetY = state->ticks % (TICKS_PER_FRAME * 5) == 0 ? 1 : 0;
+  int offsetRotation = 0;
 
   switch (state->lastInput) {
+    case 's': hard_drop(state); break;
     case 'a': --offsetX; break;
     case 'd': ++offsetX; break;
+    case 'q': --offsetRotation; break;
+    case 'e': ++offsetRotation; break;
     default: break;
   }
+  state->lastInput = 0;
 
-  remove_piece(state, state->currentPieceX, state->currentPieceY, state->currentPiece, state->currentPieceRotations);
-  if (can_put_piece(state, state->currentPieceX + offsetX, state->currentPieceY + offsetY, state->currentPiece, state->currentPieceRotations)) {
-    state->currentPieceX += offsetX;
-    state->currentPieceY += offsetY;
-    put_piece(state, state->currentPieceX, state->currentPieceY, state->currentPiece, state->currentPieceRotations);
-  } else if (can_put_piece(state, state->currentPieceX, state->currentPieceY + offsetY, state->currentPiece, state->currentPieceRotations)) {
-    state->currentPieceY += offsetY;
-    put_piece(state, state->currentPieceX, state->currentPieceY, state->currentPiece, state->currentPieceRotations);
+  if (try_apply(state, offsetX, offsetY, offsetRotation)
+   || (offsetX != 0 && try_apply(state, offsetX, 0, 0))
+   || try_apply(state, 0, offsetY, 0)) {
+    // Move suceeded
   } else {
-    put_piece(state, state->currentPieceX, state->currentPieceY, state->currentPiece, state->currentPieceRotations);
+    for (int i = 0; i < TETRIS_ROWS; ++i) {
+      int is_line = 1;
+      for (int j = 0; j < TETRIS_COLS; ++j) {
+        if (state->board[j][i+4] == CS_EMPTY) {
+          is_line = 0;
+          break;
+        }
+      }
 
+      if (is_line) {
+        for (int x = 0; x < TETRIS_COLS; ++x) {
+          for (int y = i; y >= -1; --y) {
+            state->board[x][y+4] = state->board[x][y+3];
+          }
+        }
+      }
+    }
+
+    for (int x = 0; x < TETRIS_COLS; ++x) {
+      for (int y = 0; y < 4; ++y) {
+        if (state->board[x][y] != CS_EMPTY) {
+          changeColor(WHITE, BLUE);
+          clrscr(NULL);
+          gotoXY(0, 0);
+          write(1, "Game Over!", 10);
+          for(;;);
+        }
+      }
+    }
+    
     state->currentPiece = TETROMINOS[rand() % 7];
     state->currentPieceX = TETRIS_COLS / 2;
     state->currentPieceY = -4;
     state->currentPieceRotations = 0;
+
   }
 }
 
@@ -105,7 +160,7 @@ int get_piece_index(enum CellState cs) {
 }
 
 int can_put_piece(struct GameState* state, int x, int y, enum CellState cs, int rotations) {
-  const char * _template = TETROMINO_ROTATIONS[get_piece_index(cs)][rotations % 4];
+  const char * _template = TETROMINO_ROTATIONS[get_piece_index(cs)][rotations & 0b11];
 
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
@@ -122,11 +177,11 @@ int can_put_piece(struct GameState* state, int x, int y, enum CellState cs, int 
 }
 
 void put_piece(struct GameState* state, int x, int y, enum CellState cs, int rotations) {
-  put_piece_raw(state, x, y, cs, TETROMINO_ROTATIONS[get_piece_index(cs)][rotations % 4]);
+  put_piece_raw(state, x, y, cs, TETROMINO_ROTATIONS[get_piece_index(cs)][rotations & 0b11]);
 }
 
 void remove_piece(struct GameState* state, int x, int y, enum CellState cs, int rotations) {
-  put_piece_raw(state, x, y, CS_EMPTY, TETROMINO_ROTATIONS[get_piece_index(cs)][rotations % 4]);
+  put_piece_raw(state, x, y, CS_EMPTY, TETROMINO_ROTATIONS[get_piece_index(cs)][rotations & 0b11]);
 }
 
 void put_piece_raw(struct GameState* state, int x, int y, enum CellState cs, const char* _template) {
