@@ -11,14 +11,14 @@ typedef int sem_t;
 struct list_head free_semaphore_group_queue;
 
 struct sem {
-  int in_use;
   int counter;
-  int parent_TID;
+  int owner_TID;
   struct list_head blocked_anchor;
 };
 
 struct sem_group {
   struct list_head semaphore_group_anchor;
+  int in_use_sems;
   struct sem semaphores[NR_SEMS];
 };
 
@@ -31,5 +31,7 @@ struct sem_group* assign_semaphore_group(struct task_struct *p);
 struct sem* get_semaphore(sem_t *s);
 
 int unblock_blocked_semaphore_threads(struct sem* s);
+
+int unassign_semaphore_group(struct task_struct *p);
 
 #endif

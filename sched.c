@@ -16,8 +16,6 @@
 
 union task_union task[NR_TASKS] __attribute__((__section__(".data.task")));
 
-struct list_head free_sem_group_queue;
-
 struct list_head free_queue;
 struct list_head ready_queue;
 
@@ -105,7 +103,7 @@ void init_task1(void) {
 
   pcb->task.PID = 1;
   pcb->task.TID = 1;
-  pcb->task.sem_group = 0;
+  pcb->task.sem_group = NULL;
 
   allocate_DIR(&pcb->task);
   set_user_pages(&pcb->task);

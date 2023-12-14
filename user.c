@@ -6,13 +6,14 @@ char buff[24];
 int pid;
 
 void bucle_infinito(void *n) {
+  /*
   int random_number = *(int *)n;
   char random_number_buff[10] = "";
   itoa(random_number, random_number_buff, 10);
   write(1, random_number_buff, strlen(random_number_buff));
-
+  */
   write(1, "Hola, soy el nuevo thread!\n", 27);
-
+  //semSignal((sem_t *) n);
   char *buff = memRegGet(1);
   char *buff2 = memRegGet(3);
   fork();
@@ -117,9 +118,15 @@ int __attribute__((__section__(".text.main"))) main(void) {
   int fg = 0;
   int next = gettime() + 300;
 
-  int random_number = 5;
-  if (fork_ret > 0)
-    threadCreateWithStack(bucle_infinito, 3, (void *)&random_number);
+ // int random_number = 5;
+  if (fork_ret > 0) {
+    sem_t *s;
+    s = semCreate(0);
+    threadCreateWithStack(bucle_infinito, 3, (void *)s);
+    semWait(s);
+    write(1, "Holi", 4);
+    semDestroy(s);
+  }
   while (1) {
     if (gettime() > next) {
 

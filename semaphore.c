@@ -16,15 +16,13 @@ void init_sems() {
 }
 
 void initialize_semaphore(struct sem *s) {
-  s->in_use = 0;
-  s->counter = 0;
-  s->parent_TID = -1;
+  s->owner_TID = -1;
   INIT_LIST_HEAD(&s->blocked_anchor);
 }
 
 struct sem_group* assign_semaphore_group(struct task_struct *p) {
-  if(list_empty(&free_sem_group_queue) == 0) return 0;
-  struct list_head *sem_group_head = list_first(&free_sem_group_queue);
+  if(list_empty(&free_semaphore_group_queue) == 0) return 0;
+  struct list_head *sem_group_head = list_first(&free_semaphore_group_queue);
   struct sem_group *group = list_entry(sem_group_head, struct sem_group, semaphore_group_anchor);
   list_del(sem_group_head);
   
@@ -38,6 +36,20 @@ struct sem_group* assign_semaphore_group(struct task_struct *p) {
   return group; 
 }
 
+int unassign_semaphore_group(struct task_struct *p) {
+  if(p->sem_group == 0) return -1;
+
+  list_add(&p->sem_group->semaphore_group_anchor, &free_semaphore_group_queue);
+  
+  struct list_head *e;
+  list_for_each(e, &p->thread_anchor) {
+    struct task_struct *thread = list_entry(e, struct task_struct, thread_anchor);
+    thread->sem_group = 0;
+  }
+
+  return 0;
+}
+
 struct sem* get_semaphore(sem_t *s) {
   int sem_number = (int) s;
   
@@ -48,9 +60,9 @@ struct sem* get_semaphore(sem_t *s) {
 
 int unblock_blocked_semaphore_threads(struct sem* s) {
   struct list_head *e;
-  list_for_each(e, &s->blocked_anchor) {
+  struct list_head *tmp;
+  list_for_each_safe(e, tmp, &s->blocked_anchor) {
     if(unblock(e) < 1) return -1;
-    list_del(e);
   }
   return 0;
 }

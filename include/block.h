@@ -4,12 +4,20 @@
 #include "devices.h"
 #include <list.h>
 
+struct sem;
+
+typedef struct {
+  struct sem* s;
+} SemaphoreBlocked;
+
 typedef enum {
   BR_KEYBOARD,
+  BR_SEMAPHORE,
 } BlockReason;
 
 typedef union {
   KeyboardBlocked keyboard;
+  SemaphoreBlocked semaphore;
 } BlockedUnion;
 
 typedef struct {

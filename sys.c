@@ -336,13 +336,15 @@ sem_t* sys_semCreate(int initial_value) {
   else {
     semaphore_group = process->sem_group;
   }
+
+  semaphore_group->in_use_sems++;
   
   //Search for available semaphore and when found initialize it 
   for(int i=0; i < NR_TASKS; ++i) {
     struct sem *current_semaphore = &semaphore_group->semaphores[i];
     
-    if(current_semaphore->in_use) continue;
-    current_semaphore->in_use = 1;
+    if(current_semaphore->owner_TID != -1) continue;
+    current_semaphore->owner_TID = process->TID;
     current_semaphore->counter = initial_value;
     
     return (sem_t *) i; 
@@ -354,8 +356,10 @@ int sys_semWait(sem_t* s) {
   struct sem* current_semaphore = get_semaphore(s);
   
   if(current_semaphore == 0) return -1;//Again error, i'll look it up later
-  if(current_semaphore->in_use == 0) return -1;
+  if(current_semaphore->owner_TID == -1) return -1;
   
+  current()->blocked.reason = BR_SEMAPHORE;
+  current()->blocked.blocked.semaphore.s = current_semaphore;
   if(--(current_semaphore->counter) < 0) block();
   return 0;
 }
@@ -364,9 +368,9 @@ int sys_semSignal(sem_t* s) {
   struct sem* current_semaphore = get_semaphore(s);
 
   if(current_semaphore == 0) return -1;
-  if(current_semaphore->in_use == 0) return -1;
+  if(current_semaphore->owner_TID == -1) return -1;
 
-  if(++(current_semaphore->counter) > 0) {
+  if(++(current_semaphore->counter) >= 0 && !list_empty(&current_semaphore->blocked_anchor)) {
     struct list_head *first_blocked = list_first(&current_semaphore->blocked_anchor);
     if (unblock(&current_semaphore->blocked_anchor) < 0) return -1;
     list_del(first_blocked);
@@ -376,13 +380,18 @@ int sys_semSignal(sem_t* s) {
 
 int sys_semDestroy(sem_t* s) {
   struct sem* current_semaphore = get_semaphore(s);
+  struct task_struct *process = current();
   if(current_semaphore == 0) return -1;
-  if(current_semaphore->in_use == 0) return -1;
-  if(current_semaphore->parent_TID != current()->TID) return -1;
+  if(current_semaphore->owner_TID == -1) return -1;
+  if(current_semaphore->owner_TID != process->TID) return -1;
  
   unblock_blocked_semaphore_threads(current_semaphore);
  
   initialize_semaphore(current_semaphore);
-  INIT_LIST_HEAD(&current_semaphore->blocked_anchor);
+  
+  if(--current()->sem_group->in_use_sems == 0) {
+    int unassign_sem_group_res = unassign_semaphore_group(process); 
+    if(unassign_sem_group_res == 0) return -1;
+  }
   return 0;
 }
