@@ -38,6 +38,8 @@ void exit();
 
 void perror();
 
+void * memmove(void * dest, const void * src, unsigned long num);
+
 int gotoXY(int x, int y);
 
 int changeColor(int fg, int bg);
