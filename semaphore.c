@@ -1,5 +1,6 @@
 #include <semaphore.h>
-
+#include <block.h>
+#include <sched.h>
 
 struct sem_group semaphore_groups[NR_TASKS/2];
 extern struct list_head free_semaphore_group_queue;
@@ -21,7 +22,7 @@ void initialize_semaphore(struct sem *s) {
 }
 
 struct sem_group* assign_semaphore_group(struct task_struct *p) {
-  if(list_empty(&free_semaphore_group_queue) == 0) return 0;
+  if(list_empty(&free_semaphore_group_queue)) return 0;
   struct list_head *sem_group_head = list_first(&free_semaphore_group_queue);
   struct sem_group *group = list_entry(sem_group_head, struct sem_group, semaphore_group_anchor);
   list_del(sem_group_head);

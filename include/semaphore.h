@@ -2,11 +2,15 @@
 #define SEM_H
 
 #include <list.h>
-#include <sched.h>
-#include <block.h>
 
-#define NR_SEMS NR_TASKS
+#define NR_SEMS 10
 typedef int sem_t;
+
+struct task_struct;
+
+typedef struct {
+  struct sem* s;
+} SemaphoreBlocked;
 
 struct list_head free_semaphore_group_queue;
 

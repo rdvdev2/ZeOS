@@ -13,7 +13,9 @@ void bucle_infinito(void *n) {
   write(1, random_number_buff, strlen(random_number_buff));
   */
   write(1, "Hola, soy el nuevo thread!\n", 27);
-  //semSignal((sem_t *) n);
+  for(int i = 0; i < 10000; ++i);
+  semDestroy((sem_t *) n);
+  semSignal((sem_t *) n);
   char *buff = memRegGet(1);
   char *buff2 = memRegGet(3);
   fork();
@@ -125,6 +127,7 @@ int __attribute__((__section__(".text.main"))) main(void) {
     threadCreateWithStack(bucle_infinito, 3, (void *)s);
     semWait(s);
     write(1, "Holi", 4);
+    semDestroy(s);
     semDestroy(s);
   }
   while (1) {

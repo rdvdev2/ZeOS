@@ -23,9 +23,9 @@ ret_##SC_NUM: \
 #define HANDLE_ERRORS(SC_NUM) \
 	cmpl $0, %eax; \
 	jge exit_##SC_NUM; \
-	movl $0, %ebx; \
-	subl %eax, %ebx; \
-	movl %ebx, errno; \
+	movl $0, %ecx; \
+	subl %eax, %ecx; \
+	movl %ecx, errno; \
 	movl $-1, %eax; \
 exit_##SC_NUM:
 

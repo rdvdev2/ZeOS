@@ -1,14 +1,9 @@
 #ifndef BLOCK_H
 #define BLOCK_H
 
-#include "devices.h"
+#include <devices.h>
 #include <list.h>
-
-struct sem;
-
-typedef struct {
-  struct sem* s;
-} SemaphoreBlocked;
+#include <semaphore.h>
 
 typedef enum {
   BR_KEYBOARD,
