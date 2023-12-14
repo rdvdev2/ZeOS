@@ -9,6 +9,8 @@
 #include <stats.h>
 #include <semaphore.h>
 
+#define NULL 0
+
 #define SCREEN_COLUMNS 80
 #define SCREEN_ROWS 25
 
