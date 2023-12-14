@@ -7,6 +7,7 @@
 #define __LIBC_H__
 
 #include <stats.h>
+#include <semaphore.h>
 
 #define SCREEN_COLUMNS 80
 #define SCREEN_ROWS 25
@@ -52,5 +53,13 @@ int threadCreateWithStack(void (*function)(void *arg), int N, void *parameter);
 char *memRegGet(int num_pages);
 
 int memRegDel(char *m);
+
+sem_t* semCreate(int initial_value);
+
+int semWait(sem_t* s);
+
+int semSignal(sem_t* s);
+
+int semDestroy(sem_t* s);
 
 #endif /* __LIBC_H__ */

@@ -59,5 +59,16 @@ ENTRY(sys_call_table)
 	.long sys_ni_syscall
 	.long sys_set_thread_wrapper
 	.long sys_create_thread_stack
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_ni_syscall
+	.long sys_semCreate
+	.long sys_semWait
+	.long sys_semSignal
+	.long sys_semDestroy
 .globl MAX_SYSCALL
 MAX_SYSCALL = (. - sys_call_table)
