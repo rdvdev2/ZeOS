@@ -213,20 +213,21 @@ int sys_changeColor(int fg, int bg) {
 }
 
 int sys_clrscr(char *b) {
-  char print_char = ' ';
-
-  if (b != ((void *)0))
-    print_char = *b;
-
-  int color = (background << 12 | foreground << 8) & 0xFF00;
-  Word ch = (Word)(print_char & 0x00FF) | color;
   Word *screen = (Word *)0xb8000;
 
-  for (Byte i = 0; i < NUM_COLUMNS; ++i) {
-    for (Byte j = 0; j < NUM_ROWS; ++j) {
-        screen[(j * NUM_COLUMNS + i)] = ch;
+  if (b == ((void *)0)) {
+    char print_char = ' ';
+
+    int color = (background << 12 | foreground << 8) & 0xFF00;
+    Word ch = (Word)(print_char & 0x00FF) | color;
+
+    for (Byte i = 0; i < NUM_COLUMNS; ++i) {
+      for (Byte j = 0; j < NUM_ROWS; ++j) {
+          screen[(j * NUM_COLUMNS + i)] = ch;
+      }
     }
   }
+  else if(copy_from_user(b, screen, sizeof(char) * NUM_COLUMNS*NUM_ROWS*2) < 0) return -1;
   return 0;
 }
 

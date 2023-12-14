@@ -85,7 +85,7 @@ int main(void) {
     gotoXY(1, SCREEN_ROWS / 2 + 2);
     msg = "This isn't supposed to happen. Hold t during boot to trigger the testing code.";
     write(1, msg, strlen(msg));
-
+    
     for (;;);
   }
 
