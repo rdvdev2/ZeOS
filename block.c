@@ -3,14 +3,18 @@
 #include <devices.h>
 #include <list.h>
 #include <sched.h>
+#include <semaphore.h>
 
 void block() {
-  struct list_head *blocked_queue;
+  struct list_head *blocked_queue = 0;
 
   // Add the task to the adequate blocked queue. NULL signifies failure.
   switch (current()->blocked.reason) {
   case BR_KEYBOARD:
     blocked_queue = &keyboard_blocked;
+    break;
+  case BR_SEMAPHORE:
+    blocked_queue = &current()->blocked.blocked.semaphore.s->blocked_anchor;
     break;
   }
 
@@ -33,3 +37,4 @@ int unblock(struct list_head *task_anchor) {
 
   return 0;
 }
+

@@ -50,7 +50,8 @@ SYSOBJ = \
 	random.o \
 	stats.o \
 	circular_buffer.o \
-	block.o \
+	semaphore.o \
+        block.o \
 
 LIBZEOS = -L . -l zeos
 
