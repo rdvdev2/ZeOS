@@ -6,8 +6,8 @@
 #ifndef __LIBC_H__
 #define __LIBC_H__
 
-#include <stats.h>
 #include <semaphore.h>
+#include <stats.h>
 
 int waitKey(char *buffer, int timeout);
 
@@ -45,12 +45,12 @@ char *memRegGet(int num_pages);
 
 int memRegDel(char *m);
 
-sem_t* semCreate(int initial_value);
+sem_t *semCreate(int initial_value);
 
-int semWait(sem_t* s);
+int semWait(sem_t *s);
 
-int semSignal(sem_t* s);
+int semSignal(sem_t *s);
 
-int semDestroy(sem_t* s);
+int semDestroy(sem_t *s);
 
 #endif /* __LIBC_H__ */

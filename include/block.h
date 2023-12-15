@@ -7,7 +7,7 @@
 struct sem;
 
 typedef struct {
-  struct sem* s;
+  struct sem *s;
 } SemaphoreBlocked;
 
 typedef enum {

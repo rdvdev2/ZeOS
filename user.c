@@ -13,7 +13,7 @@ void bucle_infinito(void *n) {
   write(1, random_number_buff, strlen(random_number_buff));
   */
   write(1, "Hola, soy el nuevo thread!\n", 27);
-  //semSignal((sem_t *) n);
+  // semSignal((sem_t *) n);
   char *buff = memRegGet(1);
   char *buff2 = memRegGet(3);
   fork();
@@ -118,7 +118,7 @@ int __attribute__((__section__(".text.main"))) main(void) {
   int fg = 0;
   int next = gettime() + 300;
 
- // int random_number = 5;
+  // int random_number = 5;
   if (fork_ret > 0) {
     sem_t *s;
     s = semCreate(0);
