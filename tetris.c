@@ -20,20 +20,36 @@ void input_thread(void * state) {
   for(;;) input(state);
 }
 
+void render_thread(void * state) {
+  struct GameState * liveState = state;
+  struct GameState renderState;
+
+  for(;;) {
+    // We will copy the state when available and then allow the next update to
+    // be processed while we render the frame.
+    semWait(liveState->state_copy);
+    memcpy(renderState.board, liveState->board, sizeof(liveState->board));
+    semSignal(liveState->state_copy_done);
+
+    draw(state);
+  }
+}
+
 void tetris_main() {
-  struct SwappingGameState *gameState = (struct SwappingGameState *)memRegGet(
-      sizeof(struct SwappingGameState) / 1024 + 1);
+  struct GameState *gameState = (struct GameState *)memRegGet(
+      sizeof(struct GameState) / 1024 + 1);
   if (gameState == NULL)
     return;
-  init_swapping_game_state(gameState);
+  init_game_state(gameState);
   srand(gettime());
 
-  gameState->gameStates[0].currentPiece = CS_T_PIECE;
-  gameState->gameStates[0].currentPieceX = TETRIS_COLS / 2;
-  gameState->gameStates[0].currentPieceY = -4;
-  gameState->gameStates[0].currentPieceRotations = 0;
+  gameState->currentPiece = CS_T_PIECE;
+  gameState->currentPieceX = TETRIS_COLS / 2;
+  gameState->currentPieceY = -4;
+  gameState->currentPieceRotations = 0;
 
-  threadCreateWithStack(input_thread, 1, &gameState->gameStates[0]);
+  threadCreateWithStack(input_thread, 1, gameState);
+  threadCreateWithStack(render_thread, 1, gameState);
   
   int lastUpdate = gettime();
   for(;;) {
@@ -41,10 +57,13 @@ void tetris_main() {
     do {
       current = gettime();
     } while (lastUpdate / TICKS_PER_FRAME == current / TICKS_PER_FRAME);
-    gameState->gameStates[0].ticks = lastUpdate = current;
+    gameState->ticks = lastUpdate = current;
     
-    update(&gameState->gameStates[0]);
-    draw(&gameState->gameStates[0]);
+    update(gameState);
+
+    // Let the render thread copy the state before processing the next update
+    semSignal(gameState->state_copy);
+    semWait(gameState->state_copy_done);
   }
 }
 
@@ -127,14 +146,7 @@ void update(struct GameState *state) {
     state->currentPieceX = TETRIS_COLS / 2;
     state->currentPieceY = -4;
     state->currentPieceRotations = 0;
-
   }
-}
-
-void init_swapping_game_state(struct SwappingGameState *state) {
-  state->drawerIndex = 0;
-  init_game_state(state->gameStates);
-  init_game_state(state->gameStates + 1);
 }
 
 void init_game_state(struct GameState *state) {
@@ -142,6 +154,17 @@ void init_game_state(struct GameState *state) {
     for (int j = 0; j < TETRIS_ROWS + 4; ++j) {
       state->board[i][j] = CS_EMPTY;
     }
+  }
+
+  state->state_copy = semCreate(0);
+  if ((int) state->state_copy == -1) {
+    perror();
+    for(;;);
+  }
+  state->state_copy_done = semCreate(0);
+  if ((int) state->state_copy_done == -1) {
+    perror();
+    for(;;);
   }
 }
 
@@ -210,9 +233,13 @@ void draw(struct GameState* state) {
   const int x_off = (SCREEN_COLUMNS - TETRIS_COLS) / 2;
   const int y_off = (SCREEN_ROWS - TETRIS_ROWS) / 2;
 
-  changeColor(WHITE, WHITE);
-  clrscr(NULL);
-
+  short screen_buff[SCREEN_ROWS][SCREEN_COLUMNS] = {};
+  for (int i = 0; i < SCREEN_ROWS; ++i) {
+    for (int j = 0; j < SCREEN_COLUMNS; ++j) {
+      screen_buff[i][j] = WHITE << 12 | WHITE << 12 | ' ';
+    }
+  }
+  
   for (int i = 0; i < TETRIS_COLS; ++i) {
     for (int j = 0; j < TETRIS_ROWS; ++j) {
       enum CellState cs = state->board[i][j+4];
@@ -222,9 +249,9 @@ void draw(struct GameState* state) {
         ++idx;
       }
 
-      gotoXY(x_off + i, y_off + j);
-      changeColor(TETROMINO_COLORS[idx], BLACK);
-      write(1, "O", 1);
+      screen_buff[y_off + j][x_off + i] = BLACK << 12 | TETROMINO_COLORS[idx] << 8 | 'O';
     }
   }
+  
+  clrscr((char *) screen_buff);
 }

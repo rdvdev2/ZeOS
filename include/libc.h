@@ -7,12 +7,13 @@
 #define __LIBC_H__
 
 #include <stats.h>
-#include <semaphore.h>
 
 #define NULL 0
 
 #define SCREEN_COLUMNS 80
 #define SCREEN_ROWS 25
+
+typedef int sem_t;
 
 void _init_libc();
 
@@ -38,7 +39,7 @@ void exit();
 
 void perror();
 
-void * memmove(void * dest, const void * src, unsigned long num);
+void * memcpy(void * restrict dest, const void * restrict src, unsigned long num);
 
 int gotoXY(int x, int y);
 
