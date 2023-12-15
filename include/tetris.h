@@ -7,7 +7,7 @@
 #define TETRIS_ROWS 20
 
 enum CellState {
-  CS_EMPTY   = 0b00000000,
+  CS_EMPTY = 0b00000000,
   CS_I_PIECE = 0b00000001,
   CS_O_PIECE = 0b00000010,
   CS_T_PIECE = 0b00000100,
@@ -19,12 +19,12 @@ enum CellState {
 };
 
 struct GameState {
-  enum CellState board[TETRIS_COLS][TETRIS_ROWS+4];
+  enum CellState board[TETRIS_COLS][TETRIS_ROWS + 4];
   enum CellState currentPiece;
   int currentPieceX, currentPieceY, currentPieceRotations;
   char lastInput;
   int ticks;
-  sem_t * state_copy, * state_copy_done;
+  sem_t *state_copy, *state_copy_done;
   int isGameOver;
   int score;
 };
@@ -33,14 +33,18 @@ const char TETROMINO_ROTATIONS[7][4][4];
 
 void tetris_main();
 
-void init_game_state(struct GameState* state);
+void init_game_state(struct GameState *state);
 
-int can_put_piece(struct GameState* state, int x, int y, enum CellState cs, int rotations);
-void put_piece(struct GameState* state, int x, int y, enum CellState cs, int rotations);
-void remove_piece(struct GameState* state, int x, int y, enum CellState cs, int rotations);
-void put_piece_raw(struct GameState* state, int x, int y, enum CellState cs, const char* _template);
+int can_put_piece(struct GameState *state, int x, int y, enum CellState cs,
+                  int rotations);
+void put_piece(struct GameState *state, int x, int y, enum CellState cs,
+               int rotations);
+void remove_piece(struct GameState *state, int x, int y, enum CellState cs,
+                  int rotations);
+void put_piece_raw(struct GameState *state, int x, int y, enum CellState cs,
+                   const char *_template);
 
-void input(struct GameState* state);
-void update(struct GameState* state);
-void draw(struct GameState* state);
+void input(struct GameState *state);
+void update(struct GameState *state);
+void draw(struct GameState *state);
 #endif

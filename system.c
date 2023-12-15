@@ -10,8 +10,8 @@
 #include <mm.h>
 #include <random.h>
 #include <sched.h>
-#include <semaphore.h>
 #include <segment.h>
+#include <semaphore.h>
 #include <system.h>
 #include <types.h>
 #include <utils.h>
@@ -91,15 +91,15 @@ int __attribute__((__section__(".text.main"))) main(void) {
 
   /* Initialize Semaphores */
   init_sems();
- 
+
   /* Initialize idle task  data */
   init_idle();
   /* Initialize task 1 data */
   init_task1();
 
   /* Move user code/data now (after the page table initialization) */
-  copy_data(
-      (void *)KERNEL_START + *p_sys_size, (void *)L_USER_START, *p_usr_size);
+  copy_data((void *)KERNEL_START + *p_sys_size, (void *)L_USER_START,
+            *p_usr_size);
 
   /* Reset tick counter */
   zeos_ticks = 0;
