@@ -50,8 +50,7 @@ int sys_fork() {
   }
 
   int phys_frames[user_page_nr];
-  if (temp_page < 0 || 
-  alloc_frames(user_page_nr, phys_frames) == -1) {
+  if (temp_page < 0 || alloc_frames(user_page_nr, phys_frames) == -1) {
     new->task.PID = -1;
     new->task.TID = -1;
     list_add(&new->task.queue_anchor, &free_queue);
@@ -71,8 +70,8 @@ int sys_fork() {
 
       set_ss_pag(parent_PT, temp_page, current_frame);
       set_cr3(current()->dir_pages_baseAddr);
-      copy_data(
-          (void *)(i * PAGE_SIZE), (void *)(temp_page * PAGE_SIZE), PAGE_SIZE);
+      copy_data((void *)(i * PAGE_SIZE), (void *)(temp_page * PAGE_SIZE),
+                PAGE_SIZE);
     }
   }
 
@@ -115,14 +114,14 @@ int sys_write(int fd, char *buffer, int size) {
   if (check_fd_result != 0) {
     return check_fd_result;
   }
-   
+
   if (size == 0)
     return 0;
 
   if (size < 0)
     return -EINVAL;
 
-  if (!access_ok(VERIFY_READ, (void *) buffer, size)) {
+  if (!access_ok(VERIFY_READ, (void *)buffer, size)) {
     return -EFAULT;
   }
 
@@ -166,8 +165,8 @@ int sys_gettime() { return zeos_ticks; }
 
 int sys_get_stats(int pid, struct stats *st) {
   struct task_struct *task = get_task_with_pid(pid);
-  
-  if(!access_ok(VERIFY_WRITE, st, sizeof(struct stats))) {
+
+  if (!access_ok(VERIFY_WRITE, st, sizeof(struct stats))) {
     return -EFAULT;
   }
   if (task == NULL)
@@ -215,24 +214,24 @@ int sys_clrscr(char *b) {
 
     for (Byte i = 0; i < NUM_COLUMNS; ++i) {
       for (Byte j = 0; j < NUM_ROWS; ++j) {
-          screen[(j * NUM_COLUMNS + i)] = ch;
+        screen[(j * NUM_COLUMNS + i)] = ch;
       }
     }
-  }
-  else {
-    int size = sizeof(char) * NUM_COLUMNS*NUM_ROWS*2;
-    if(!access_ok(VERIFY_READ, b, size) ||
-      copy_from_user(b, screen, size) < 0) return -EFAULT;
+  } else {
+    int size = sizeof(char) * NUM_COLUMNS * NUM_ROWS * 2;
+    if (!access_ok(VERIFY_READ, b, size) || copy_from_user(b, screen, size) < 0)
+      return -EFAULT;
   }
 
   return 0;
 }
 
-void (*pthread_wrapper)(void*(void*), void *) = NULL;
+void (*pthread_wrapper)(void *(void *), void *) = NULL;
 
-int sys_set_thread_wrapper(void (*wrapper)(void*(void*), void*)) {
-  if (pthread_wrapper != NULL) return -EINVAL;
-  
+int sys_set_thread_wrapper(void (*wrapper)(void *(void *), void *)) {
+  if (pthread_wrapper != NULL)
+    return -EINVAL;
+
   if (!access_ok(VERIFY_READ, wrapper, 1))
     return -EFAULT;
 
@@ -240,22 +239,23 @@ int sys_set_thread_wrapper(void (*wrapper)(void*(void*), void*)) {
   return 0;
 }
 
-int sys_create_thread_stack(
-    void (*function)(void *arg),
-    int N,
-    void *parameter) {
+int sys_create_thread_stack(void (*function)(void *arg), int N,
+                            void *parameter) {
 
-  if(!access_ok(VERIFY_READ, function, sizeof(void *))) return -EFAULT;
-  if(N < 1) return -EINVAL;
-  if(!access_ok(VERIFY_READ, parameter, sizeof(void *))) return -EFAULT;
+  if (!access_ok(VERIFY_READ, function, sizeof(void *)))
+    return -EFAULT;
+  if (N < 1)
+    return -EINVAL;
+  if (!access_ok(VERIFY_READ, parameter, sizeof(void *)))
+    return -EFAULT;
 
   union task_union *new = NULL;
   int clone_ret;
   if ((clone_ret = clone_current_task(&new)) != 0) {
     return clone_ret;
   }
-  
-  int phys_frames[N + 1];
+
+  int phys_frames[N + 1]; //+1 for the TLS even thought we don't use it :(
   if (alloc_frames(N + 1, phys_frames) == -1) {
     new->task.TID = -1;
     new->task.PID = -1;
@@ -270,7 +270,7 @@ int sys_create_thread_stack(
     new->task.TID = -1;
     new->task.PID = -1;
     list_add(&new->task.queue_anchor, &free_queue);
-    free_frames(N+1, phys_frames);
+    free_frames(N + 1, phys_frames);
     return -ENOMEM;
   }
   int first_stack_page = block_starts[0];
@@ -285,22 +285,20 @@ int sys_create_thread_stack(
       (unsigned long *)((N + first_stack_page) * PAGE_SIZE - 4);
 
   new->stack[KERNEL_STACK_SIZE - 3] = (unsigned long)(stack_bottom - 2); // ESP
-  new->stack[KERNEL_STACK_SIZE - 6] = (unsigned long) pthread_wrapper;           // EIP
+  new->stack[KERNEL_STACK_SIZE - 6] = (unsigned long)pthread_wrapper;    // EIP
 
   unsigned long ret_to_pagefault = NULL;
-  if(copy_to_user(&parameter, stack_bottom, sizeof(unsigned long)) ||
-  copy_to_user(&function, stack_bottom - 1, sizeof(unsigned long))) {
+  if (copy_to_user(&parameter, stack_bottom, sizeof(unsigned long)) ||
+      copy_to_user(&function, stack_bottom - 1, sizeof(unsigned long))) {
     new->task.TID = -1;
     new->task.PID = -1;
     list_add(&new->task.queue_anchor, &free_queue);
     deallocate_user_pages(block_sizes, block_starts, 2, PT, NULL);
-    free_frames(N+1, phys_frames);
+    free_frames(N + 1, phys_frames);
   }
-  
-  copy_to_user(
-      &ret_to_pagefault,
-      stack_bottom - 2,
-      sizeof(unsigned long)); // @RET
+
+  copy_to_user(&ret_to_pagefault, stack_bottom - 2,
+               sizeof(unsigned long)); // @RET
 
   update_process_state_rr(&new->task, &ready_queue);
   new->task.esp = (unsigned long)&new->stack[KERNEL_STACK_SIZE - 19];
@@ -336,7 +334,8 @@ char *sys_memRegGet(int num_pages) {
 int sys_memRegDel(char *m) {
   if ((unsigned long)m % PAGE_SIZE != 0)
     return -EINVAL;
-  if (!access_ok(VERIFY_READ, m, sizeof(char *))) return -EFAULT;
+  if (!access_ok(VERIFY_READ, m, sizeof(char *)))
+    return -EFAULT;
 
   page_table_entry *PT = get_PT(current());
   int first_page = (unsigned long)m / PAGE_SIZE;
@@ -359,88 +358,101 @@ int sys_memRegDel(char *m) {
   return 0;
 }
 
-sem_t* sys_semCreate(int initial_value) {
+sem_t *sys_semCreate(int initial_value) {
   struct task_struct *process = current();
-  
-  //Get the process' semaphore group or assign one if it doesn't have any
+
+  // Get the process' semaphore group or assign one if it doesn't have any
   struct sem_group *semaphore_group;
-  if(process->sem_group == 0) {
+  if (process->sem_group == 0) {
     semaphore_group = assign_semaphore_group(process);
-    if(semaphore_group == 0) return (sem_t *) -EAGAIN;
-  }
-  else {
+    if (semaphore_group == 0)
+      return (sem_t *)-EAGAIN;
+  } else {
     semaphore_group = process->sem_group;
   }
 
   semaphore_group->in_use_sems++;
-  
-  //Search for available semaphore and when found initialize it 
-  for(int i=0; i < NR_TASKS; ++i) {
+
+  // Search for available semaphore and when found initialize it
+  for (int i = 0; i < NR_TASKS; ++i) {
     struct sem *current_semaphore = &semaphore_group->semaphores[i];
-    
-    if(current_semaphore->owner_TID != -1) continue;
+
+    if (current_semaphore->owner_TID != -1)
+      continue;
     current_semaphore->owner_TID = process->TID;
     current_semaphore->counter = initial_value;
-    
-    return (sem_t *) i; 
+
+    return (sem_t *)i;
   }
-  return (sem_t *) -ENOMEM;
+  return (sem_t *)-ENOMEM;
 }
 
-int sys_semWait(sem_t* s) {  
-  struct sem* current_semaphore = get_semaphore(s);
-  
-  if(current_semaphore == 0) return -EINVAL;//Again error, i'll look it up later
-  if(current_semaphore->owner_TID == -1) return -EINVAL;
-  
+int sys_semWait(sem_t *s) {
+  struct sem *current_semaphore = get_semaphore(s);
+
+  if (current_semaphore == 0)
+    return -EINVAL; // Again error, i'll look it up later
+  if (current_semaphore->owner_TID == -1)
+    return -EINVAL;
+
   current()->blocked.reason = BR_SEMAPHORE;
   current()->blocked.blocked.semaphore.s = current_semaphore;
-  if(--(current_semaphore->counter) < 0) block();
+  if (--(current_semaphore->counter) < 0)
+    block();
   return 0;
 }
 
-int sys_semSignal(sem_t* s) {
-  struct sem* current_semaphore = get_semaphore(s);
+int sys_semSignal(sem_t *s) {
+  struct sem *current_semaphore = get_semaphore(s);
 
-  if(current_semaphore == 0) return -EINVAL;
-  if(current_semaphore->owner_TID == -1) return -EINVAL;
+  if (current_semaphore == 0)
+    return -EINVAL;
+  if (current_semaphore->owner_TID == -1)
+    return -EINVAL;
 
-  if(++(current_semaphore->counter) <= 0 && !list_empty(&current_semaphore->blocked_anchor)) {
-    if (unblock(list_first(&current_semaphore->blocked_anchor)) < 0) return -EINVAL;
+  if (++(current_semaphore->counter) <= 0 &&
+      !list_empty(&current_semaphore->blocked_anchor)) {
+    if (unblock(list_first(&current_semaphore->blocked_anchor)) < 0)
+      return -EINVAL;
   }
   return 0;
 }
 
-int sys_semDestroy(sem_t* s) {
-  struct sem* current_semaphore = get_semaphore(s);
+int sys_semDestroy(sem_t *s) {
+  struct sem *current_semaphore = get_semaphore(s);
   struct task_struct *process = current();
   int unblocked_threads = 0;
 
-  if(current_semaphore == 0) return -EINVAL;
-  if(current_semaphore->owner_TID == -1) return -EINVAL;
-  if(current_semaphore->owner_TID != process->TID) return -EINVAL;
- 
+  if (current_semaphore == 0)
+    return -EINVAL;
+  if (current_semaphore->owner_TID == -1)
+    return -EINVAL;
+  if (current_semaphore->owner_TID != process->TID)
+    return -EINVAL;
+
   unblocked_threads = unblock_blocked_semaphore_threads(current_semaphore);
-  
-  if(unblocked_threads == -1) return -EINVAL;
+
+  if (unblocked_threads == -1)
+    return -EINVAL;
 
   initialize_semaphore(current_semaphore);
-  
-  if(--current()->sem_group->in_use_sems == 0) {
-    int unassign_sem_group_res = unassign_semaphore_group(process); 
-    if(unassign_sem_group_res == 0) return -EINVAL;
+
+  if (--current()->sem_group->in_use_sems == 0) {
+    int unassign_sem_group_res = unassign_semaphore_group(process);
+    if (unassign_sem_group_res == 0)
+      return -EINVAL;
   }
   return unblocked_threads;
 }
 
 void sys_exit() {
   struct task_struct *process = current();
-  
-  //We destroy any semaphores whose creator is the thread that's exiting
-  if(process->sem_group != 0) {
-    for(int i = 0; i < NR_SEMS; ++i) {
-      if(process->sem_group->semaphores[i].owner_TID == process->TID)
-        sys_semDestroy((sem_t *) i);
+
+  // We destroy any semaphores whose creator is the thread that's exiting
+  if (process->sem_group != 0) {
+    for (int i = 0; i < NR_SEMS; ++i) {
+      if (process->sem_group->semaphores[i].owner_TID == process->TID)
+        sys_semDestroy((sem_t *)i);
     }
   }
 

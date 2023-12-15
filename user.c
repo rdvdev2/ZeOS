@@ -1,6 +1,6 @@
+#include <colors.h>
 #include <libc.h>
 #include <stats.h>
-#include <colors.h>
 #include <tetris.h>
 
 char buff[24];
@@ -15,9 +15,10 @@ void bucle_infinito(void *n) {
   write(1, random_number_buff, strlen(random_number_buff));
   */
   write(1, "Hola, soy el nuevo thread!\n", 27);
-  for(int i = 0; i < 10000; ++i);
-  semDestroy((sem_t *) n);
-  semSignal((sem_t *) n);
+  for (int i = 0; i < 10000; ++i)
+    ;
+  semDestroy((sem_t *)n);
+  semSignal((sem_t *)n);
   char *buff = memRegGet(1);
   char *buff2 = memRegGet(3);
   fork();
@@ -83,13 +84,15 @@ int main(void) {
     changeColor(BRIGHT_WHITE, RED);
     clrscr(0);
     gotoXY(SCREEN_COLUMNS / 3, SCREEN_ROWS / 2);
-    char * msg = "ERROR: The game returned.";
+    char *msg = "ERROR: The game returned.";
     write(1, msg, strlen(msg));
     gotoXY(1, SCREEN_ROWS / 2 + 2);
-    msg = "This isn't supposed to happen. Hold t during boot to trigger the testing code.";
+    msg = "This isn't supposed to happen. Hold t during boot to trigger the "
+          "testing code.";
     write(1, msg, strlen(msg));
-    
-    for (;;);
+
+    for (;;)
+      ;
   }
 
   switch (fork()) {
@@ -137,7 +140,7 @@ int main(void) {
   int fg = 0;
   int next = gettime() + 300;
 
- // int random_number = 5;
+  // int random_number = 5;
   if (fork_ret > 0) {
     sem_t *s;
     s = semCreate(0);

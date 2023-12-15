@@ -8,9 +8,7 @@ typedef int sem_t;
 
 struct task_struct;
 
-typedef struct {
-  struct sem* s;
-} SemaphoreBlocked;
+typedef struct { struct sem *s; } SemaphoreBlocked;
 
 struct list_head free_semaphore_group_queue;
 
@@ -30,11 +28,11 @@ void init_sems();
 
 void initialize_semaphore(struct sem *s);
 
-struct sem_group* assign_semaphore_group(struct task_struct *p);
+struct sem_group *assign_semaphore_group(struct task_struct *p);
 
-struct sem* get_semaphore(sem_t *s);
+struct sem *get_semaphore(sem_t *s);
 
-int unblock_blocked_semaphore_threads(struct sem* s);
+int unblock_blocked_semaphore_threads(struct sem *s);
 
 int unassign_semaphore_group(struct task_struct *p);
 

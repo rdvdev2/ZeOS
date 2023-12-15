@@ -39,7 +39,7 @@ void exit();
 
 void perror();
 
-void * memcpy(void * restrict dest, const void * restrict src, unsigned long num);
+void *memcpy(void *restrict dest, const void *restrict src, unsigned long num);
 
 int gotoXY(int x, int y);
 
@@ -49,9 +49,10 @@ int clrscr(char *b);
 
 int get_stats(int pid, struct stats *st);
 
-// This function is intended to be used by libc, and the user is discouraged from
+// This function is intended to be used by libc, and the user is discouraged
+// from
 // using it themselves.
-int __set_thread_wrapper(void (*wrapper)(void*(void*), void*));
+int __set_thread_wrapper(void (*wrapper)(void *(void *), void *));
 
 int threadCreateWithStack(void (*function)(void *arg), int N, void *parameter);
 
@@ -59,12 +60,12 @@ char *memRegGet(int num_pages);
 
 int memRegDel(char *m);
 
-sem_t* semCreate(int initial_value);
+sem_t *semCreate(int initial_value);
 
-int semWait(sem_t* s);
+int semWait(sem_t *s);
 
-int semSignal(sem_t* s);
+int semSignal(sem_t *s);
 
-int semDestroy(sem_t* s);
+int semDestroy(sem_t *s);
 
 #endif /* __LIBC_H__ */
