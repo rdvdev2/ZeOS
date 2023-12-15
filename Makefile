@@ -62,6 +62,8 @@ USROBJ = \
 	errors.o \
 	libpthread.o \
 	tetris.o \
+	tetromino_rotations.o \
+	random.o \
 	# libjp.a \
 
 all:zeos.bin
