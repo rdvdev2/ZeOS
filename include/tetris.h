@@ -25,6 +25,8 @@ struct GameState {
   char lastInput;
   int ticks;
   sem_t * state_copy, * state_copy_done;
+  int isGameOver;
+  int score;
 };
 
 const char TETROMINO_ROTATIONS[7][4][4];

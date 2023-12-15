@@ -28,7 +28,13 @@ void render_thread(void * state) {
     // We will copy the state when available and then allow the next update to
     // be processed while we render the frame.
     semWait(liveState->state_copy);
-    memcpy(renderState.board, liveState->board, sizeof(liveState->board));
+
+    renderState.isGameOver = liveState->isGameOver;
+    renderState.score = liveState->score;
+    if (!renderState.isGameOver) { // Board is static in game over
+      memcpy(renderState.board, liveState->board, sizeof(liveState->board));
+    }
+
     semSignal(liveState->state_copy_done);
 
     draw(state);
@@ -40,7 +46,11 @@ void tetris_main() {
       sizeof(struct GameState) / 1024 + 1);
   if (gameState == NULL)
     return;
+
+  gameState->state_copy = (sem_t *) -1;
+  gameState->state_copy_done = (sem_t *) -1;
   init_game_state(gameState);
+
   srand(gettime());
 
   gameState->currentPiece = CS_T_PIECE;
@@ -89,10 +99,18 @@ int try_apply(struct GameState *state, int offsetX, int offsetY, int offsetRotat
 }
 
 void hard_drop(struct GameState * state) {
-  while (try_apply(state, 0, 1, 0));
+  while (try_apply(state, 0, 1, 0)) state->score += 2;
 }
 
 void update(struct GameState *state) {
+  if (state->isGameOver) {
+    if (state->lastInput == 'r') {
+      init_game_state(state);
+    } else {
+      return;
+    }
+  }
+  
   int offsetX = 0;
   int offsetY = state->ticks % (TICKS_PER_FRAME * 5) == 0 ? 1 : 0;
   int offsetRotation = 0;
@@ -112,6 +130,8 @@ void update(struct GameState *state) {
    || try_apply(state, 0, offsetY, 0)) {
     // Move suceeded
   } else {
+
+    int line_clears = 0;
     for (int i = 0; i < TETRIS_ROWS; ++i) {
       int is_line = 1;
       for (int j = 0; j < TETRIS_COLS; ++j) {
@@ -127,17 +147,18 @@ void update(struct GameState *state) {
             state->board[x][y+4] = state->board[x][y+3];
           }
         }
+
+        ++line_clears;
+        int clear_level = TETRIS_ROWS - i;
+        state->score += clear_level * 100 * line_clears;
       }
     }
 
     for (int x = 0; x < TETRIS_COLS; ++x) {
       for (int y = 0; y < 4; ++y) {
         if (state->board[x][y] != CS_EMPTY) {
-          changeColor(WHITE, BLUE);
-          clrscr(NULL);
-          gotoXY(0, 0);
-          write(1, "Game Over!", 10);
-          for(;;);
+          state->isGameOver = 1;
+          return;
         }
       }
     }
@@ -156,16 +177,24 @@ void init_game_state(struct GameState *state) {
     }
   }
 
-  state->state_copy = semCreate(0);
-  if ((int) state->state_copy == -1) {
-    perror();
-    for(;;);
+  if (state->state_copy == (sem_t *) -1) {
+    state->state_copy = semCreate(0);
+    if ((int) state->state_copy == -1) {
+      perror();
+      for(;;);
+    }
   }
-  state->state_copy_done = semCreate(0);
-  if ((int) state->state_copy_done == -1) {
-    perror();
-    for(;;);
+
+  if (state->state_copy_done == (sem_t *) -1) {
+    state->state_copy_done = semCreate(0);
+    if ((int) state->state_copy_done == -1) {
+      perror();
+      for(;;);
+    }
   }
+
+  state->isGameOver = 0;
+  state->score = 0;
 }
 
 int get_piece_index(enum CellState cs) {
@@ -252,9 +281,32 @@ void draw(struct GameState* state) {
       screen_buff[y_off + j][x_off + i] = BLACK << 12 | TETROMINO_COLORS[idx] << 8 | 'O';
     }
   }
-  
+
   if (clrscr((char *) screen_buff) < 0) {
     perror();
     for(;;);
+  }
+
+  if (state->isGameOver) {
+    changeColor(WHITE, BRIGHT_RED);
+
+    char msg[] = "GAME OVER!";
+    int msg_len = strlen(msg);
+    gotoXY((SCREEN_COLUMNS - msg_len) / 2, SCREEN_ROWS / 2 - 1);
+    write(1, msg, msg_len);
+
+    char msg2[SCREEN_COLUMNS] = "SCORE: ";
+    itoa(state->score, &msg2[strlen(msg2)], 10);
+    msg_len = strlen(msg2);
+    gotoXY((SCREEN_COLUMNS - msg_len) / 2, SCREEN_ROWS / 2 + 1);
+    write(1, msg2, msg_len);
+  } else {
+    changeColor(BRIGHT_CYAN, WHITE);
+
+    char msg[SCREEN_COLUMNS];
+    itoa(state->score, msg, 10);
+    int msg_len = strlen(msg);
+    gotoXY(SCREEN_COLUMNS - msg_len - 1, 1);
+    write(1, msg, msg_len);
   }
 }
