@@ -114,16 +114,16 @@ int sys_write(int fd, char *buffer, int size) {
   if (check_fd_result != 0) {
     return check_fd_result;
   }
-
-  if (buffer == (char *)0) {
-    return -EFAULT;
-  }
-
+   
   if (size == 0)
     return 0;
 
   if (size < 0)
     return -EINVAL;
+
+  if (!access_ok(VERIFY_READ, (void *) buffer, size)) {
+    return -EFAULT;
+  }
 
   int (*write_function)(char *, int);
   switch (fd) {
@@ -165,7 +165,10 @@ int sys_gettime() { return zeos_ticks; }
 
 int sys_get_stats(int pid, struct stats *st) {
   struct task_struct *task = get_task_with_pid(pid);
-
+  
+  if(!access_ok(VERIFY_WRITE, st, sizeof(struct stats))) {
+    return -EFAULT;
+  }
   if (task == NULL)
     return -ESRCH;
 
@@ -215,7 +218,12 @@ int sys_clrscr(char *b) {
       }
     }
   }
-  else if(copy_from_user(b, screen, sizeof(char) * NUM_COLUMNS*NUM_ROWS*2) < 0) return -1;
+  else {
+    int size = sizeof(char) * NUM_COLUMNS*NUM_ROWS*2;
+    if(!access_ok(VERIFY_READ, b, size) ||
+      copy_from_user(b, screen, size) < 0) return -EFAULT;
+  }
+
   return 0;
 }
 
@@ -235,12 +243,17 @@ int sys_create_thread_stack(
     void (*function)(void *arg),
     int N,
     void *parameter) {
+
+  if(!access_ok(VERIFY_READ, function, sizeof(int *))) return -EFAULT;
+  if(N < 1) return -EINVAL;
+  if(!access_ok(VERIFY_READ, parameter, sizeof(int *))) return -EFAULT;
+
   union task_union *new = NULL;
   int clone_ret;
   if ((clone_ret = clone_current_task(&new)) != 0) {
     return clone_ret;
   }
-
+  
   int phys_frames[N + 1];
   if (alloc_frames(N + 1, phys_frames) == -1) {
     return -ENOMEM;
@@ -308,6 +321,7 @@ char *sys_memRegGet(int num_pages) {
 int sys_memRegDel(char *m) {
   if ((unsigned long)m % PAGE_SIZE != 0)
     return -EINVAL;
+  if (!access_ok(VERIFY_READ, m, sizeof(char *))) return -EFAULT;
 
   page_table_entry *PT = get_PT(current());
   int first_page = (unsigned long)m / PAGE_SIZE;
