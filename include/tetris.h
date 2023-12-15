@@ -35,14 +35,30 @@ void tetris_main();
 
 void init_game_state(struct GameState *state);
 
-int can_put_piece(struct GameState *state, int x, int y, enum CellState cs,
-                  int rotations);
-void put_piece(struct GameState *state, int x, int y, enum CellState cs,
-               int rotations);
-void remove_piece(struct GameState *state, int x, int y, enum CellState cs,
-                  int rotations);
-void put_piece_raw(struct GameState *state, int x, int y, enum CellState cs,
-                   const char *_template);
+int can_put_piece(
+    struct GameState *state,
+    int x,
+    int y,
+    enum CellState cs,
+    int rotations);
+void put_piece(
+    struct GameState *state,
+    int x,
+    int y,
+    enum CellState cs,
+    int rotations);
+void remove_piece(
+    struct GameState *state,
+    int x,
+    int y,
+    enum CellState cs,
+    int rotations);
+void put_piece_raw(
+    struct GameState *state,
+    int x,
+    int y,
+    enum CellState cs,
+    const char *_template);
 
 void input(struct GameState *state);
 void update(struct GameState *state);

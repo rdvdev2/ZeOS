@@ -39,9 +39,9 @@ page_table_entry *get_DIR(struct task_struct *t) {
 
 /* get_PT - Returns the Page Table address for task 't' */
 page_table_entry *get_PT(struct task_struct *t) {
-  return (page_table_entry
-              *)(((unsigned int)(t->dir_pages_baseAddr->bits.pbase_addr))
-                 << 12);
+  return (
+      page_table_entry
+          *)(((unsigned int)(t->dir_pages_baseAddr->bits.pbase_addr)) << 12);
 }
 
 int allocate_DIR(struct task_struct *t) {

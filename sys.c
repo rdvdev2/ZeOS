@@ -70,8 +70,8 @@ int sys_fork() {
 
       set_ss_pag(parent_PT, temp_page, current_frame);
       set_cr3(current()->dir_pages_baseAddr);
-      copy_data((void *)(i * PAGE_SIZE), (void *)(temp_page * PAGE_SIZE),
-                PAGE_SIZE);
+      copy_data(
+          (void *)(i * PAGE_SIZE), (void *)(temp_page * PAGE_SIZE), PAGE_SIZE);
     }
   }
 
@@ -239,8 +239,10 @@ int sys_set_thread_wrapper(void (*wrapper)(void *(void *), void *)) {
   return 0;
 }
 
-int sys_create_thread_stack(void (*function)(void *arg), int N,
-                            void *parameter) {
+int sys_create_thread_stack(
+    void (*function)(void *arg),
+    int N,
+    void *parameter) {
 
   if (!access_ok(VERIFY_READ, function, sizeof(void *)))
     return -EFAULT;
@@ -297,8 +299,10 @@ int sys_create_thread_stack(void (*function)(void *arg), int N,
     free_frames(N + 1, phys_frames);
   }
 
-  copy_to_user(&ret_to_pagefault, stack_bottom - 2,
-               sizeof(unsigned long)); // @RET
+  copy_to_user(
+      &ret_to_pagefault,
+      stack_bottom - 2,
+      sizeof(unsigned long)); // @RET
 
   update_process_state_rr(&new->task, &ready_queue);
   new->task.esp = (unsigned long)&new->stack[KERNEL_STACK_SIZE - 19];

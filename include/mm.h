@@ -23,10 +23,18 @@ void free_frame(unsigned int frame);
 void free_frames(int ammount, int *frames);
 void set_user_pages(struct task_struct *task);
 void clear_user_space(struct task_struct *task);
-int allocate_user_pages(int *block_sizes, int *block_starts, int block_count,
-                        page_table_entry *PT, int *free_frames);
-void deallocate_user_pages(int *block_sizes, int *block_starts, int block_count,
-                           page_table_entry *PT, int *free_frames);
+int allocate_user_pages(
+    int *block_sizes,
+    int *block_starts,
+    int block_count,
+    page_table_entry *PT,
+    int *free_frames);
+void deallocate_user_pages(
+    int *block_sizes,
+    int *block_starts,
+    int block_count,
+    page_table_entry *PT,
+    int *free_frames);
 
 extern Descriptor *gdt;
 

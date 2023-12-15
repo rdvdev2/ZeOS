@@ -8,7 +8,9 @@ typedef int sem_t;
 
 struct task_struct;
 
-typedef struct { struct sem *s; } SemaphoreBlocked;
+typedef struct {
+  struct sem *s;
+} SemaphoreBlocked;
 
 struct list_head free_semaphore_group_queue;
 
