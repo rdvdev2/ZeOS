@@ -62,8 +62,11 @@ struct sem* get_semaphore(sem_t *s) {
 int unblock_blocked_semaphore_threads(struct sem* s) {
   struct list_head *e;
   struct list_head *tmp;
+  int cont = 0;
+
   list_for_each_safe(e, tmp, &s->blocked_anchor) {
     if(unblock(e) < 1) return -1;
+    ++cont;
   }
-  return 0;
+  return cont;
 }

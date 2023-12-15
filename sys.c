@@ -92,20 +92,6 @@ int sys_fork() {
   return new->task.PID;
 }
 
-void sys_exit() {
-  struct task_struct *process = current();
-
-  if (list_empty(&process->thread_anchor))
-    clear_user_space(process);
-  list_del(&process->thread_anchor);
-
-  process->PID = -1;
-  process->TID = -1;
-  list_add(&(process->queue_anchor), &free_queue);
-
-  sched_next_rr();
-}
-
 int sys_waitkey(char *buffer, int timeout) {
   if (!access_ok(VERIFY_WRITE, (void *)buffer, 1)) {
     return -14; // EFAULT
@@ -399,17 +385,43 @@ int sys_semSignal(sem_t* s) {
 int sys_semDestroy(sem_t* s) {
   struct sem* current_semaphore = get_semaphore(s);
   struct task_struct *process = current();
+  int unblocked_threads = 0;
+
   if(current_semaphore == 0) return -EINVAL;
   if(current_semaphore->owner_TID == -1) return -EINVAL;
   if(current_semaphore->owner_TID != process->TID) return -EINVAL;
  
-  unblock_blocked_semaphore_threads(current_semaphore);
- 
+  unblocked_threads = unblock_blocked_semaphore_threads(current_semaphore);
+  
+  if(unblocked_threads == -1) return -EINVAL;
+
   initialize_semaphore(current_semaphore);
   
   if(--current()->sem_group->in_use_sems == 0) {
     int unassign_sem_group_res = unassign_semaphore_group(process); 
     if(unassign_sem_group_res == 0) return -EINVAL;
   }
-  return 0;
+  return unblocked_threads;
+}
+
+void sys_exit() {
+  struct task_struct *process = current();
+  
+  //We destroy any semaphores whose creator is the thread that's exiting
+  if(process->sem_group != 0) {
+    for(int i = 0; i < NR_SEMS; ++i) {
+      if(process->sem_group->semaphores[i].owner_TID == process->TID)
+        sys_semDestroy((sem_t *) i);
+    }
+  }
+
+  if (list_empty(&process->thread_anchor))
+    clear_user_space(process);
+  list_del(&process->thread_anchor);
+
+  process->PID = -1;
+  process->TID = -1;
+  list_add(&(process->queue_anchor), &free_queue);
+
+  sched_next_rr();
 }
