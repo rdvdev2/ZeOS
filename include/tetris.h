@@ -1,6 +1,8 @@
 #ifndef TETRIS_H
 #define TETRIS_H
 
+#include <libc.h>
+
 #define TETRIS_COLS 10
 #define TETRIS_ROWS 20
 
@@ -22,18 +24,13 @@ struct GameState {
   int currentPieceX, currentPieceY, currentPieceRotations;
   char lastInput;
   int ticks;
-};
-
-struct SwappingGameState {
-  int drawerIndex;
-  struct GameState gameStates[2];
+  sem_t * state_copy, * state_copy_done;
 };
 
 const char TETROMINO_ROTATIONS[7][4][4];
 
 void tetris_main();
 
-void init_swapping_game_state(struct SwappingGameState* state);
 void init_game_state(struct GameState* state);
 
 int can_put_piece(struct GameState* state, int x, int y, enum CellState cs, int rotations);
