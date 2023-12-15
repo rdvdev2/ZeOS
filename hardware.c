@@ -44,19 +44,19 @@ void set_task_reg(Selector tr) {
 }
 
 void return_gate(Word ds, Word ss, DWord esp, Word cs, DWord eip) {
-  __asm__ __volatile__("mov %0,%%es\n\t"
-                       "mov %0,%%ds\n\t"
-                       "movl %2, %%eax\n\t"
-                       "addl $12, %%eax\n\t"
-                       "movl %5,(%%eax)\n\t"
-                       "pushl %1\n\t" /* user ss */
-                       "pushl %2\n\t" /* user esp */
-                       "pushl %3\n\t" /* user cs */
-                       "pushl %4\n\t" /* user eip */
-                       "lret"
-                       : /*no output*/
-                       : "m"(ds), "m"(ss), "m"(esp), "m"(cs), "m"(eip),
-                         "d"(*p_rdtr));
+  __asm__ __volatile__(
+      "mov %0,%%es\n\t"
+      "mov %0,%%ds\n\t"
+      "movl %2, %%eax\n\t"
+      "addl $12, %%eax\n\t"
+      "movl %5,(%%eax)\n\t"
+      "pushl %1\n\t" /* user ss */
+      "pushl %2\n\t" /* user esp */
+      "pushl %3\n\t" /* user cs */
+      "pushl %4\n\t" /* user eip */
+      "lret"
+      : /*no output*/
+      : "m"(ds), "m"(ss), "m"(esp), "m"(cs), "m"(eip), "d"(*p_rdtr));
 }
 
 /*

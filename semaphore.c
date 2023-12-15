@@ -12,8 +12,9 @@ void init_sems() {
     for (int j = 0; j < NR_SEMS; ++j) {
       initialize_semaphore(&(semaphore_groups[i].semaphores[j]));
     }
-    list_add(&semaphore_groups[i].semaphore_group_anchor,
-             &free_semaphore_group_queue);
+    list_add(
+        &semaphore_groups[i].semaphore_group_anchor,
+        &free_semaphore_group_queue);
   }
 }
 

@@ -7,8 +7,13 @@
 const int TICKS_PER_FRAME = 1;
 
 const enum CellState TETROMINOS[] = {
-    CS_I_PIECE, CS_O_PIECE, CS_T_PIECE, CS_S_PIECE,
-    CS_Z_PIECE, CS_J_PIECE, CS_L_PIECE,
+    CS_I_PIECE,
+    CS_O_PIECE,
+    CS_T_PIECE,
+    CS_S_PIECE,
+    CS_Z_PIECE,
+    CS_J_PIECE,
+    CS_L_PIECE,
 };
 
 void input_thread(void *state) {
@@ -77,24 +82,42 @@ void tetris_main() {
 
 void input(struct GameState *state) { waitKey(&state->lastInput, 2147483647); }
 
-int try_apply(struct GameState *state, int offsetX, int offsetY,
-              int offsetRotation) {
-  remove_piece(state, state->currentPieceX, state->currentPieceY,
-               state->currentPiece, state->currentPieceRotations);
-  if (can_put_piece(state, state->currentPieceX + offsetX,
-                    state->currentPieceY + offsetY, state->currentPiece,
-                    state->currentPieceRotations + offsetRotation)) {
+int try_apply(
+    struct GameState *state,
+    int offsetX,
+    int offsetY,
+    int offsetRotation) {
+  remove_piece(
+      state,
+      state->currentPieceX,
+      state->currentPieceY,
+      state->currentPiece,
+      state->currentPieceRotations);
+  if (can_put_piece(
+          state,
+          state->currentPieceX + offsetX,
+          state->currentPieceY + offsetY,
+          state->currentPiece,
+          state->currentPieceRotations + offsetRotation)) {
     state->currentPieceX += offsetX;
     state->currentPieceY += offsetY;
     state->currentPieceRotations += offsetRotation;
 
-    put_piece(state, state->currentPieceX, state->currentPieceY,
-              state->currentPiece, state->currentPieceRotations);
+    put_piece(
+        state,
+        state->currentPieceX,
+        state->currentPieceY,
+        state->currentPiece,
+        state->currentPieceRotations);
 
     return 1;
   } else {
-    put_piece(state, state->currentPieceX, state->currentPieceY,
-              state->currentPiece, state->currentPieceRotations);
+    put_piece(
+        state,
+        state->currentPieceX,
+        state->currentPieceY,
+        state->currentPiece,
+        state->currentPieceRotations);
 
     return 0;
   }
@@ -237,8 +260,12 @@ int get_piece_index(enum CellState cs) {
   }
 }
 
-int can_put_piece(struct GameState *state, int x, int y, enum CellState cs,
-                  int rotations) {
+int can_put_piece(
+    struct GameState *state,
+    int x,
+    int y,
+    enum CellState cs,
+    int rotations) {
   const char *_template =
       TETROMINO_ROTATIONS[get_piece_index(cs)][rotations & 0b11];
 
@@ -258,20 +285,40 @@ int can_put_piece(struct GameState *state, int x, int y, enum CellState cs,
   return 1;
 }
 
-void put_piece(struct GameState *state, int x, int y, enum CellState cs,
-               int rotations) {
-  put_piece_raw(state, x, y, cs,
-                TETROMINO_ROTATIONS[get_piece_index(cs)][rotations & 0b11]);
+void put_piece(
+    struct GameState *state,
+    int x,
+    int y,
+    enum CellState cs,
+    int rotations) {
+  put_piece_raw(
+      state,
+      x,
+      y,
+      cs,
+      TETROMINO_ROTATIONS[get_piece_index(cs)][rotations & 0b11]);
 }
 
-void remove_piece(struct GameState *state, int x, int y, enum CellState cs,
-                  int rotations) {
-  put_piece_raw(state, x, y, CS_EMPTY,
-                TETROMINO_ROTATIONS[get_piece_index(cs)][rotations & 0b11]);
+void remove_piece(
+    struct GameState *state,
+    int x,
+    int y,
+    enum CellState cs,
+    int rotations) {
+  put_piece_raw(
+      state,
+      x,
+      y,
+      CS_EMPTY,
+      TETROMINO_ROTATIONS[get_piece_index(cs)][rotations & 0b11]);
 }
 
-void put_piece_raw(struct GameState *state, int x, int y, enum CellState cs,
-                   const char *_template) {
+void put_piece_raw(
+    struct GameState *state,
+    int x,
+    int y,
+    enum CellState cs,
+    const char *_template) {
   for (int i = 0; i < 4; ++i) {
     for (int j = 0; j < 4; ++j) {
       int _x = x + j;
@@ -284,7 +331,13 @@ void put_piece_raw(struct GameState *state, int x, int y, enum CellState cs,
 
 void draw(struct GameState *state) {
   const int TETROMINO_COLORS[] = {
-      CYAN,  YELLOW, MAGENTA, GREEN, RED, BLUE, GRAY,
+      CYAN,
+      YELLOW,
+      MAGENTA,
+      GREEN,
+      RED,
+      BLUE,
+      GRAY,
       BLACK, // EMPTY
   };
 
