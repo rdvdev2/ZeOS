@@ -92,3 +92,11 @@ void perror() {
   write(1, msg, strlen(msg));
   write(1, "\n", 1);
 }
+
+void * memcpy(void * restrict dest, const void * restrict src, unsigned long num) {
+  for (unsigned long i = 0; i < num; ++i) {
+    ((char*)dest)[i] = ((char*)src)[i];
+  }
+
+  return dest;
+}
