@@ -49,11 +49,12 @@ int sys_fork() {
       temp_page = i;
   }
 
-  if (temp_page < 0)
-    return -ENOMEM;
-
   int phys_frames[user_page_nr];
-  if (alloc_frames(user_page_nr, phys_frames) == -1) {
+  if (temp_page < 0 || 
+  alloc_frames(user_page_nr, phys_frames) == -1) {
+    new->task.PID = -1;
+    new->task.TID = -1;
+    list_add(&new->task.queue_anchor, &free_queue);
     return -ENOMEM;
   }
 
@@ -244,9 +245,9 @@ int sys_create_thread_stack(
     int N,
     void *parameter) {
 
-  if(!access_ok(VERIFY_READ, function, sizeof(int *))) return -EFAULT;
+  if(!access_ok(VERIFY_READ, function, sizeof(void *))) return -EFAULT;
   if(N < 1) return -EINVAL;
-  if(!access_ok(VERIFY_READ, parameter, sizeof(int *))) return -EFAULT;
+  if(!access_ok(VERIFY_READ, parameter, sizeof(void *))) return -EFAULT;
 
   union task_union *new = NULL;
   int clone_ret;
@@ -256,6 +257,9 @@ int sys_create_thread_stack(
   
   int phys_frames[N + 1];
   if (alloc_frames(N + 1, phys_frames) == -1) {
+    new->task.TID = -1;
+    new->task.PID = -1;
+    list_add(&new->task.queue_anchor, &free_queue);
     return -ENOMEM;
   }
 
@@ -263,6 +267,10 @@ int sys_create_thread_stack(
   int block_sizes[2] = {N, 1};
   int block_starts[2] = {};
   if (allocate_user_pages(block_sizes, block_starts, 2, PT, phys_frames) != 0) {
+    new->task.TID = -1;
+    new->task.PID = -1;
+    list_add(&new->task.queue_anchor, &free_queue);
+    free_frames(N+1, phys_frames);
     return -ENOMEM;
   }
   int first_stack_page = block_starts[0];
@@ -280,8 +288,15 @@ int sys_create_thread_stack(
   new->stack[KERNEL_STACK_SIZE - 6] = (unsigned long) pthread_wrapper;           // EIP
 
   unsigned long ret_to_pagefault = NULL;
-  copy_to_user(&parameter, stack_bottom, sizeof(unsigned long)); // PARAM
-  copy_to_user(&function, stack_bottom - 1, sizeof(unsigned long)); // FUNC
+  if(copy_to_user(&parameter, stack_bottom, sizeof(unsigned long)) ||
+  copy_to_user(&function, stack_bottom - 1, sizeof(unsigned long))) {
+    new->task.TID = -1;
+    new->task.PID = -1;
+    list_add(&new->task.queue_anchor, &free_queue);
+    deallocate_user_pages(block_sizes, block_starts, 2, PT, NULL);
+    free_frames(N+1, phys_frames);
+  }
+  
   copy_to_user(
       &ret_to_pagefault,
       stack_bottom - 2,
