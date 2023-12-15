@@ -48,8 +48,8 @@ void tetris_main() {
   gameState->currentPieceY = -4;
   gameState->currentPieceRotations = 0;
 
-  threadCreateWithStack(input_thread, 1, gameState);
-  threadCreateWithStack(render_thread, 1, gameState);
+  if (threadCreateWithStack(input_thread, 1, gameState) != 0) return;
+  if (threadCreateWithStack(render_thread, 1, gameState) != 0) return;
   
   int lastUpdate = gettime();
   for(;;) {
@@ -253,5 +253,8 @@ void draw(struct GameState* state) {
     }
   }
   
-  clrscr((char *) screen_buff);
+  if (clrscr((char *) screen_buff) < 0) {
+    perror();
+    for(;;);
+  }
 }
